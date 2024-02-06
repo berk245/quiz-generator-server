@@ -1,3 +1,6 @@
-fastapi
+fastapi~=0.109.0
 pydantic==1.10.13
 uvicorn
+bcrypt~=4.1.2
+SQLAlchemy~=2.0.25
+python-dotenv~=1.0.1
