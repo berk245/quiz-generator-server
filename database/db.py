@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from typing import Generator
 from dotenv import load_dotenv

@@ -1,9 +1,9 @@
 from fastapi import HTTPException
-from http_models.auth import SignupRequest
+from http_models.auth import SignupRequest, LoginRequest
 from sqlalchemy.orm import Session
 from database.db_models import User
 from fastapi.responses import JSONResponse
-from helpers.auth_helpers import hash_password
+from helpers.auth_helpers import hash_password, verify_password, create_jwt
 
 
 async def handle_signup(request: SignupRequest, db: Session):
@@ -14,3 +14,11 @@ async def handle_signup(request: SignupRequest, db: Session):
     return JSONResponse(status_code=200, content={"signup": 'success', 'user_token': '123456'})
 
 
+async def handle_login(request: LoginRequest, db: Session):
+    login_user = db.query(User).filter(User.email == request.email).first()
+
+    if login_user and verify_password(input_password=request.password, hashed_password=login_user.password):
+        return JSONResponse(status_code=200, content={"login": 'success', 'user_token': create_jwt(login_user)})
+    else:
+        # Invalid email or password
+        raise HTTPException(status_code=404, detail="Invalid email or password")
