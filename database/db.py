@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 # Load the .env file
 load_dotenv()
 
-# Now you can access the variables
 db_uri = os.getenv('DATABASE_URI')
 engine = create_engine(db_uri)
 
