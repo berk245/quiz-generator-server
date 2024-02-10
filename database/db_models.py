@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = 'User'
     user_id = Column(BIGINT, primary_key=True, autoincrement=True)

@@ -3,7 +3,7 @@ from http_models.auth import LoginRequest, SignupRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from middleware import setup_cors_middleware
-from handlers.auth_handler import handle_signup
+from handlers.auth_handler import handle_signup, handle_login
 from database.db import get_db
 
 app = FastAPI()
@@ -16,15 +16,10 @@ async def root():
 
 
 @app.post("/login")
-async def login(body: LoginRequest):
-    try:
-        print(body)
-        return JSONResponse(status_code=200, content={"login": 'success', 'user_token': '123456'})
-    except Exception as e:
-        print(e)
-        return JSONResponse(status_code=500, content={"login": 'error'})
+async def login(body: LoginRequest, db: Session = Depends(get_db)) -> JSONResponse:
+    return await handle_login(request=body, db=db)
 
 
 @app.post("/signup")
-async def signup(body: SignupRequest, db: Session = Depends(get_db)):
+async def signup(body: SignupRequest, db: Session = Depends(get_db)) -> JSONResponse:
     return await handle_signup(request=body, db=db)
