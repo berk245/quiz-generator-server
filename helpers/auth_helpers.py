@@ -22,3 +22,19 @@ def create_jwt(login_user):
     }
 
     return jwt.encode(user_info, "secret", algorithm="HS256")
+
+
+def validate_jwt(token):
+    try:
+        print('Parsing token', token)
+        decoded_token = jwt.decode(token, 'secret', algorithms=["HS256"])
+
+        # Retrieve and return the user_id from the decoded token
+        user_id = decoded_token.get("user_id")
+        return user_id
+    except jwt.ExpiredSignatureError:
+        # Handle token expiration
+        return None
+    except jwt.InvalidTokenError:
+        # Handle invalid token
+        return None
