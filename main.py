@@ -27,6 +27,6 @@ async def signup(body: SignupRequest, db: Session = Depends(get_db)) -> JSONResp
     return await handle_signup(request=body, db=db)
 
 
-@app.get('/quiz')
+@app.get('/quizzes')
 async def get_quizzes(request: Request, db: Session = Depends(get_db)):
     return quiz_handler.get_quizzes(request=request, db=db)
