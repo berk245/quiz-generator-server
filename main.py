@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Depends, Request
 from http_models.auth import LoginRequest, SignupRequest
+from http_models.quizzes import CreateQuizRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from middleware import setup_cors_middleware, validate_token
 from handlers.auth_handler import handle_signup, handle_login
 from database.db import get_db
 from handlers import quiz_handler
+from fastapi import UploadFile, Form, File
+
 
 app = FastAPI()
 setup_cors_middleware(app)
@@ -30,3 +33,13 @@ async def signup(body: SignupRequest, db: Session = Depends(get_db)) -> JSONResp
 @app.get('/quizzes')
 async def get_quizzes(request: Request, db: Session = Depends(get_db)):
     return quiz_handler.get_quizzes(request=request, db=db)
+
+
+@app.post('/quizzes')
+async def post_quiz(request: Request,
+                    source_file: UploadFile = File(...),
+                    db: Session = Depends(get_db)):
+    body = await request.form()
+    print(body.get('quiz_name'))
+    print(source_file)
+    return True
