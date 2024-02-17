@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Depends, Request
 from http_models.auth import LoginRequest, SignupRequest
-from http_models.quizzes import CreateQuizRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from middleware import setup_cors_middleware, validate_token
 from handlers.auth_handler import handle_signup, handle_login
 from database.db import get_db
 from handlers import quiz_handler
-from fastapi import UploadFile, Form, File
+from fastapi import UploadFile, File
 
 
 app = FastAPI()
