@@ -39,7 +39,4 @@ async def get_quizzes(request: Request, db: Session = Depends(get_db)):
 async def post_quiz(request: Request,
                     source_file: UploadFile = File(...),
                     db: Session = Depends(get_db)):
-    body = await request.form()
-    print(body.get('quiz_name'))
-    print(source_file)
-    return True
+    return await quiz_handler.add_quiz(request=request, source_file=source_file, db=db)
