@@ -15,7 +15,7 @@ def get_quizzes(request: Request, db: Session):
     return JSONResponse(status_code=200, content={"data": serialized_quizzes})
 
 
-async def add_quiz(request: Request, source_file: UploadFile, db:Session):
+async def add_quiz(request: Request, source_file: UploadFile, db: Session):
     quiz_info = await request.form()
     new_quiz = Quiz(
         quiz_title=quiz_info.get('quiz_title'),

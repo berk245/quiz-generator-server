@@ -17,10 +17,11 @@ class User(Base):
 
     quizzes = relationship("Quiz", back_populates='user')
 
+
 class Quiz(Base):
     __tablename__ = 'Quiz'
     quiz_id = Column(BIGINT, primary_key=True, autoincrement=True)
-    user_id = Column(BIGINT, ForeignKey('User.user_id'),nullable=False)
+    user_id = Column(BIGINT, ForeignKey('User.user_id'), nullable=False)
     quiz_title = Column(String, nullable=False)
     quiz_description = Column(LONGTEXT, nullable=True)
     keywords = Column(LONGTEXT, nullable=True)
