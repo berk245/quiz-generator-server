@@ -13,13 +13,11 @@ def get_sources(request: Request, db: Session):
     return JSONResponse(status_code=200, content={"data": sources})
 
 
-def add_source(user_id: str, file: UploadFile, db: Session ):
-
+def add_source(user_id: str, file: UploadFile, file_hash: str, db: Session):
     new_source = Source(
         file_name=file.filename,
         user_id=user_id,
-        file_hash='123'
-        # ToDo create file hash
+        file_hash=file_hash
     )
 
     db.add(new_source)
@@ -42,5 +40,3 @@ def add_quiz_source(new_source: Source, quiz_id: int, db: Session):
     db.refresh(new_quiz_source)
 
     return new_quiz_source
-
-
