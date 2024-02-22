@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from database.db_models import Source, QuizSource
-# from helpers.quiz_helpers import serialize_quiz
 
 
 def get_sources(request: Request, db: Session):
