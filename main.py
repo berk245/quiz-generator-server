@@ -44,3 +44,8 @@ async def post_quiz(request: Request,
 @app.get('/sources')
 async def get_sources(request: Request, db: Session = Depends(get_db)):
     return source_handler.get_sources(request=request, db=db)
+
+
+@app.get('/quiz')
+async def get_quiz(request: Request, quiz_id=str, db: Session = Depends(get_db)):
+    return quiz_handler.get_quiz_info(request=request, quiz_id=quiz_id, db=db)

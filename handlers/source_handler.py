@@ -1,8 +1,9 @@
 from fastapi import Request, UploadFile
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from database.db_models import Source, QuizSource
+from helpers import source_helpers
 
 
 def get_sources(request: Request, db: Session):
@@ -39,3 +40,15 @@ def add_quiz_source_table(new_source: Source, quiz_id: int, db: Session):
     db.refresh(new_quiz_source)
 
     return new_quiz_source
+
+
+def get_quiz_sources(quiz_id: str, db: Session):
+    quiz_sources = (
+        db.query(Source)
+        .join(QuizSource, QuizSource.source_id == Source.source_id)
+        .filter(QuizSource.quiz_id == quiz_id)
+        .options(joinedload(Source.quiz_sources).joinedload(QuizSource.source))
+        .all()
+    )
+
+    return source_helpers.serialize_source(quiz_sources)
