@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from middleware import setup_cors_middleware, validate_token
 from handlers.auth_handler import handle_signup, handle_login
 from database.db import get_db
-from handlers import quiz_handler
+from handlers import quiz_handler, source_handler
 from fastapi import UploadFile, File
 
 
@@ -39,3 +39,8 @@ async def post_quiz(request: Request,
                     source_file: UploadFile = File(...),
                     db: Session = Depends(get_db)):
     return await quiz_handler.add_quiz(request=request, source_file=source_file, db=db)
+
+
+@app.get('/sources')
+async def get_sources(request: Request, db: Session = Depends(get_db)):
+    return source_handler.get_sources(request=request, db=db)
