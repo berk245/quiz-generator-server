@@ -47,7 +47,6 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
 
 
 def _add_quiz_table(quiz_info: FormData, user_id, db: Session):
-    print(quiz_info.get('keywords'))
     new_quiz = Quiz(
         quiz_title=quiz_info.get('quiz_title'),
         quiz_description=quiz_info.get('quiz_description'),
