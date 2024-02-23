@@ -14,6 +14,13 @@ def get_sources(request: Request, db: Session):
 
 
 def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session):
+    # Check if user has already uploaded the same source to prevent duplicates
+    existing_source = db.query(Source).filter(Source.user_id == user_id,
+                                              Source.file_hash == file_hash
+                                              ).first()
+    if existing_source:
+        return existing_source
+
     new_source = Source(
         file_name=file.filename,
         user_id=user_id,
@@ -26,6 +33,7 @@ def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session
     db.refresh(new_source)
 
     return new_source
+
 
 
 def add_quiz_source_table(new_source: Source, quiz_id: int, db: Session):
