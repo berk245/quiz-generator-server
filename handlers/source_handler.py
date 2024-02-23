@@ -35,7 +35,6 @@ def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session
     return new_source
 
 
-
 def add_quiz_source_table(new_source: Source, quiz_id: int, db: Session):
     new_quiz_source = QuizSource(
         source_id=new_source.source_id,
