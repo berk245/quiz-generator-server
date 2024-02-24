@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, String, Boolean, DateTime, INT
-from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy.dialects.mysql import LONGTEXT, ENUM
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -34,6 +34,10 @@ class Quiz(Base):
     user = relationship("User", back_populates="quizzes")
     quiz_sources = relationship("QuizSource", back_populates="quiz")
 
+    # Define the one-to-many relationship
+    questions = relationship("Question", back_populates="quiz")
+
+
 class Source(Base):
     __tablename__ = 'Source'
     source_id = Column(INT, primary_key=True, autoincrement=True)
@@ -45,6 +49,7 @@ class Source(Base):
     user = relationship("User", back_populates="sources")
     quiz_sources = relationship("QuizSource", back_populates="source")
 
+
 class QuizSource(Base):
     __tablename__ = 'QuizSource'
     quiz_source_id = Column(INT, primary_key=True, autoincrement=True)
@@ -54,3 +59,20 @@ class QuizSource(Base):
 
     source = relationship("Source", back_populates="quiz_sources")
     quiz = relationship("Quiz", back_populates="quiz_sources")
+
+
+class Question(Base):
+    __tablename__ = 'Question'
+
+    question_id = Column(INT, primary_key=True, autoincrement=True)
+    quiz_id = Column(INT, ForeignKey('Quiz.quiz_id'), nullable=False)
+    instructions = Column(LONGTEXT, nullable=True)
+    question_type = Column(ENUM('multi'), nullable=False)
+    question_text = Column(LONGTEXT, nullable=False)
+    multiple_choices = Column(LONGTEXT, nullable=True)
+    correct_answer = Column(LONGTEXT, nullable=True)
+    is_accepted = Column(Boolean, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+     
+    # Define the many-to-one relationship
+    quiz = relationship("Quiz", back_populates="questions")
