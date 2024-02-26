@@ -17,7 +17,7 @@ def get_quiz_questions(request: Request, quiz_id: str, db: Session):
     return JSONResponse(status_code=200, content={'data': {"questions": serialize_questions(questions)}})
 
 
-async def update_question(request: Request, db: Session):
+async def edit_question(request: Request, db: Session):
     user_id = request.state.user_id
     
     updated_question = await request.json()
@@ -37,6 +37,9 @@ async def update_question(request: Request, db: Session):
     # Update the question fields
     for field, value in updated_question.items():
         setattr(db_question, field, value)
+    
+    # Flag the question as edited for statistics
+    db_question.is_edited = True
     
     db.commit()
     

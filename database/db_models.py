@@ -72,6 +72,7 @@ class Question(Base):
     multiple_choices = Column(LONGTEXT, nullable=True)
     correct_answer = Column(LONGTEXT, nullable=True)
     is_accepted = Column(Boolean, nullable=True)
+    is_edited = Column(Boolean, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
      
     # Define the many-to-one relationship

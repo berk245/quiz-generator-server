@@ -57,6 +57,6 @@ async def get_questions(request: Request, quiz_id: str, db: Session = Depends(ge
 
 
 @app.put('/questions')
-async def update_question(request: Request, db: Session = Depends(get_db)):
-    return await question_handler.update_question(request=request, db=db)
+async def edit_question(request: Request, db: Session = Depends(get_db)):
+    return await question_handler.edit_question(request=request, db=db)
 
