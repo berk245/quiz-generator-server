@@ -60,3 +60,7 @@ async def get_questions(request: Request, quiz_id: str, db: Session = Depends(ge
 async def edit_question(request: Request, db: Session = Depends(get_db)):
     return await question_handler.edit_question(request=request, db=db)
 
+
+@app.post('/questions')
+async def generate_questions(request: Request, db: Session = Depends(get_db)):
+    return await question_handler.generate_questions(request=request, db=db)
