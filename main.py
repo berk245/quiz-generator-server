@@ -52,5 +52,11 @@ async def get_quiz(request: Request, quiz_id: str, db: Session = Depends(get_db)
 
 
 @app.get('/questions')
-async def get_questions(quiz_id: str, db: Session = Depends(get_db)):
-    return question_handler.get_quiz_questions(quiz_id=quiz_id, db=db)
+async def get_questions(request: Request, quiz_id: str, db: Session = Depends(get_db)):
+    return question_handler.get_quiz_questions(request=request, quiz_id=quiz_id, db=db)
+
+
+@app.put('/questions')
+async def edit_question(request: Request, db: Session = Depends(get_db)):
+    return await question_handler.edit_question(request=request, db=db)
+
