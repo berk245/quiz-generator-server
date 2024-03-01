@@ -19,8 +19,6 @@ class PDFMinerPagesLoader(BaseLoader):
         self.file_name = file_name
         self.pdf_file_obj = file.file.read()
 
-    
-    
     def load(self) -> List[Document]:
         documents = []
         with io.BytesIO(self.pdf_file_obj) as file:
@@ -35,7 +33,7 @@ class PDFMinerPagesLoader(BaseLoader):
                 document = Document(
                     page_content=page_content,
                     metadata={'source': '{} (page {})'.format(self.file_name, i + 1),
-                            'page': i + 1,
-                            'source_file_hash': self.file_hash})
+                              'page': i + 1,
+                              'source_file_hash': self.file_hash})
                 documents.append(document)
         return documents
