@@ -39,15 +39,14 @@ def _get_prompt(amount, keywords=None, instructions=None):
     prompt = (f"Generate a list of {amount} quiz questions along with their correct answers. "
               f"Make sure to have the exact amount of results!")
     prompt += "This tool is designed to assist teachers in creating quiz questions efficiently."
-    prompt += "This tool is designed to assist teachers in creating quiz questions efficiently."
+    prompt += "Do NOT include any identifiers in multiple choices, such as A), B), C) etc or 1,2,3."
+    prompt += "Just include the potential answers without anything else."
 
     if keywords:
         prompt += f" Focus on the following keywords: {', '.join(keywords)}."
 
     if instructions:
         prompt += f" Follow the provided instructions: {instructions}."
-        prompt += "Do not include A), B), C) etc in the multiple choices."
-        prompt += "Just include the potential answers without anything else."
 
     prompt += "Ensure that the generated questions are relevant in a quiz context, excluding irrelevant details such as"
     prompt += "research questions, methods, table of contents, authors, and the purpose of sections in the documents."
