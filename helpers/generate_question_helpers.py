@@ -20,7 +20,6 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
     return questions
 
 
-
 def _parse_generation_settings(question_generation_settings, user_id: str, db: Session):
     quiz_id = question_generation_settings.get('quiz_id')
     amount = question_generation_settings.get('amount')

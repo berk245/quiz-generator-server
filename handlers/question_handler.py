@@ -1,6 +1,8 @@
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
+import pandas as pd
 from fastapi import Request
+from io import BytesIO
 
 from database.db_models import Question, Quiz
 from helpers.question_helpers import serialize_questions
@@ -90,3 +92,19 @@ def _add_question_table(question_data: Question, quiz_id: str, db: Session):
     db.commit()
 
     return
+
+
+async def get_questions_as_csv(request: Request, db: Session):
+    questions = await request.json()
+    # Create a DataFrame from the list of dictionaries
+    df = pd.DataFrame(questions)
+    df = df.rename(columns={
+        'question_text': 'Question Text',
+        'correct_answer': 'Correct Answer',
+        'multiple_choices': 'Multiple Choices'
+    })
+    csv_buffer = BytesIO()
+    df.to_csv(csv_buffer, index=False)
+
+    return StreamingResponse(iter([csv_buffer.getvalue()]), media_type="text/csv",
+                             headers={'Content-Disposition': 'attachment; filename=output.csv'})

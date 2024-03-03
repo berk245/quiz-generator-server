@@ -68,3 +68,8 @@ async def generate_questions(request: Request, db: Session = Depends(get_db)):
 @app.post('/questions')
 async def add_generated_questions_to_quiz(request: Request, db: Session = Depends(get_db)):
     return await question_handler.add_question_to_quiz(request=request, db=db)
+
+
+@app.post('/questions/csv')
+async def get_questions_as_csv(request: Request, db: Session = Depends(get_db)):
+    return await question_handler.get_questions_as_csv(request=request, db=db)
