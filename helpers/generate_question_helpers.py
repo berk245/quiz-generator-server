@@ -8,19 +8,17 @@ CHAIN_CACHE = {}
 
 
 def get_generated_questions(user_id: str, question_generation_settings, db: Session):
-    try:
-        quiz, amount, instructions, keywords = _parse_generation_settings(question_generation_settings, user_id=user_id,
-                                                                          db=db)
-        _validate_inputs_and_authorization(quiz=quiz, amount=amount)
+    quiz, amount, instructions, keywords = _parse_generation_settings(question_generation_settings, user_id=user_id,
+                                                                      db=db)
+    _validate_inputs_and_authorization(quiz=quiz, amount=amount)
 
-        chain = _get_chain(quiz=quiz)
+    chain = _get_chain(quiz=quiz)
 
-        raw_response = chain.invoke(_get_prompt(amount, keywords, instructions))
-        questions = _parse_questions(response=raw_response)
+    raw_response = chain.invoke(_get_prompt(amount, keywords, instructions))
+    questions = _parse_questions(response=raw_response)
 
-        return questions
-    except HTTPException:
-        raise
+    return questions
+
 
 
 def _parse_generation_settings(question_generation_settings, user_id: str, db: Session):

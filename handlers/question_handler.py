@@ -55,7 +55,6 @@ async def generate_questions(request: Request, db: Session):
                                                       question_generation_settings=question_generation_settings,
                                                       db=db)
         return JSONResponse(status_code=200, content={'questions': generated_questions})
-
     except HTTPException:
         raise
 
