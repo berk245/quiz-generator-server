@@ -56,6 +56,7 @@ async def generate_questions(request: Request, db: Session):
         generated_questions = get_generated_questions(user_id=user_id,
                                                       question_generation_settings=question_generation_settings,
                                                       db=db)
+        
         return JSONResponse(status_code=200, content={'questions': generated_questions})
     except HTTPException:
         raise
@@ -87,6 +88,8 @@ def _add_question_table(question_data: Question, quiz_id: str, db: Session):
         question_text=question_data.get('question_text'),
         multiple_choices=question_data.get('multiple_choices'),
         correct_answer=question_data.get('correct_answer'),
+        difficulty=question_data.get('difficulty'),
+        score=question_data.get('score'),
     )
     db.add(new_question)
     db.commit()
