@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database.db_models import Quiz
 from starlette.exceptions import HTTPException
 from helpers import vectorstore_helpers
-
+import uuid
 CHAIN_CACHE = {}
 
 
@@ -16,7 +16,12 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
 
     raw_response = chain.invoke(_get_prompt(amount, keywords, instructions))
     questions = _parse_questions(response=raw_response)
-
+    
+    for q in questions:
+            # Generate a random id for each generated question
+            # LLM is instructed to do this as well. This is for extra security and decoupling from the LLM, which
+            # may fail to provide a unique id at times.
+            q['question_id'] = str(uuid.uuid4())
     return questions
 
 
