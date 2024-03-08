@@ -40,7 +40,9 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
         return JSONResponse(status_code=200, content={"quiz_id": new_quiz.quiz_id})
 
     except Exception as e:
+        print(e)
         source_handler.delete_quiz_source(new_quiz_source, db)
+        source_handler.delete_source(new_source, db)
         _delete_quiz(new_quiz, db)
         raise HTTPException(status_code=500, detail='Internal server error')
 
@@ -65,7 +67,6 @@ def _delete_quiz(quiz: Quiz, db: Session):
         db.delete(to_delete)
         db.commit()
     return
-
 
 
 def get_quiz_info(request: Request, quiz_id: str, db: Session):
