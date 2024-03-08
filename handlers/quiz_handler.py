@@ -33,16 +33,15 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
         new_quiz = _add_quiz_table(quiz_info=quiz_info, user_id=user_id, db=db)
         new_source = source_handler.add_source_table(user_id=user_id, file=source_file, file_hash=file_hash,
                                                      db=db)
-        source_handler.add_quiz_source_table(new_source=new_source, quiz_id=new_quiz.quiz_id, db=db)
-
+        new_quiz_source = source_handler.add_quiz_source_table(new_source=new_source, quiz_id=new_quiz.quiz_id, db=db)
+        
         add_quiz_to_vectorstore(source_file=source_file, new_quiz=new_quiz, file_hash=file_hash)
 
         return JSONResponse(status_code=200, content={"quiz_id": new_quiz.quiz_id})
 
     except Exception as e:
-        # Todo: implement solid rollback method
-        print(e)
-        db.rollback()
+        source_handler.delete_quiz_source(new_quiz_source, db)
+        _delete_quiz(new_quiz, db)
         raise HTTPException(status_code=500, detail='Internal server error')
 
 
@@ -59,6 +58,14 @@ def _add_quiz_table(quiz_info: FormData, user_id, db: Session):
     db.refresh(new_quiz)
 
     return new_quiz
+
+def _delete_quiz(quiz: Quiz, db: Session):
+    to_delete = db.query(Quiz).filter(Quiz.quiz_id == quiz.quiz_id).first()
+    if to_delete:
+        db.delete(to_delete)
+        db.commit()
+    return
+
 
 
 def get_quiz_info(request: Request, quiz_id: str, db: Session):
