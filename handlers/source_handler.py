@@ -16,8 +16,7 @@ def get_sources(request: Request, db: Session):
 def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session):
     # Check if user has already uploaded the same source to prevent duplicates
     existing_source = db.query(Source).filter(Source.user_id == user_id,
-                                                Source.file_hash == file_hash
-                                                ).first()
+                                                Source.file_hash == file_hash).first()
     if existing_source:
         return existing_source
 
