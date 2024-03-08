@@ -16,8 +16,7 @@ def get_sources(request: Request, db: Session):
 def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session):
     # Check if user has already uploaded the same source to prevent duplicates
     existing_source = db.query(Source).filter(Source.user_id == user_id,
-                                              Source.file_hash == file_hash
-                                              ).first()
+                                                Source.file_hash == file_hash).first()
     if existing_source:
         return existing_source
 
@@ -35,6 +34,16 @@ def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session
     return new_source
 
 
+
+def delete_source(source: Source, db: Session):
+    to_delete = db.query(Source).filter(Source.source_id == source.source_id).first()
+    if to_delete:
+        db.delete(to_delete)
+        db.commit()
+    return
+
+
+
 def add_quiz_source_table(new_source: Source, quiz_id: int, db: Session):
     new_quiz_source = QuizSource(
         source_id=new_source.source_id,
@@ -48,6 +57,13 @@ def add_quiz_source_table(new_source: Source, quiz_id: int, db: Session):
 
     return new_quiz_source
 
+
+def delete_quiz_source(quiz_source: QuizSource, db: Session):
+    to_delete = db.query(QuizSource).filter(QuizSource.quiz_source_id == quiz_source.quiz_source_id).first()
+    if to_delete:
+        db.delete(to_delete)
+        db.commit()
+    return
 
 def get_quiz_sources(quiz_id: str, db: Session):
     quiz_sources = (
