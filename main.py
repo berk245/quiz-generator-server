@@ -9,7 +9,7 @@ from handlers import quiz_handler, source_handler, question_handler
 from fastapi import UploadFile, File
 
 app = FastAPI()
-setup_cors_middleware(app)
+# setup_cors_middleware(app)
 app.middleware('http')(validate_token)
 
 
