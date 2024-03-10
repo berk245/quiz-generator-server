@@ -6,7 +6,7 @@ from helpers.auth_helpers import validate_jwt
 def setup_cors_middleware(app) -> None:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=['http://localhost:3000', 'https://app.qgen.live'],
+        allow_origins=['*'],
         allow_credentials=True,
         allow_headers=['*'],
         allow_methods=['*']
