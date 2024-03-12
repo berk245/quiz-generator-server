@@ -4,10 +4,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from database.db_models import User
 from fastapi.responses import JSONResponse
-from helpers.auth_helpers import hash_password, verify_password, create_jwt
+from helpers.auth_helpers import hash_password, verify_password, create_jwt, is_signup_data_valid
 
 async def handle_signup(request: SignupRequest, db: Session):
     try:
+        if not is_signup_data_valid(request=request):
+            raise HTTPException(status_code=400, detail="Bad request.")
+        
         new_user = User(email=request.email, password=hash_password(password=request.password))
         db.add(new_user)
         db.commit()

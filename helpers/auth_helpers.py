@@ -1,6 +1,7 @@
 import bcrypt
 import jwt
-
+from http_models.auth import SignupRequest
+import re
 
 def hash_password(password):
     salt = bcrypt.gensalt()
@@ -38,3 +39,21 @@ def validate_jwt(token):
     except jwt.InvalidTokenError:
         # Handle invalid token
         return None
+
+
+def is_valid_email(email):
+    pattern = r'^\S+@\S+\.\S+$'
+    return re.match(pattern, email) is not None
+
+
+def is_signup_data_valid(request: SignupRequest):
+    if len(request.password) < 8:
+        return False 
+    if not is_valid_email(request.email):
+        return False
+    return True
+    
+
+
+
+# Example usage:
