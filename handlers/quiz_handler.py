@@ -40,7 +40,6 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
         return JSONResponse(status_code=200, content={"quiz_id": new_quiz.quiz_id})
 
     except Exception as e:
-        print(e)
         source_handler.delete_quiz_source(new_quiz_source, db)
         source_handler.delete_source(new_source, db)
         _delete_quiz(new_quiz, db)
