@@ -32,10 +32,10 @@ class Quiz(Base):
 
     # Define the many-to-one relationship
     user = relationship("User", back_populates="quizzes")
-    quiz_sources = relationship("QuizSource", back_populates="quiz")
+    quiz_sources = relationship("QuizSource", cascade='all, delete', back_populates="quiz")
 
     # Define the one-to-many relationship
-    questions = relationship("Question", back_populates="quiz")
+    questions = relationship("Question", cascade='all, delete', back_populates="quiz")
 
 
 class Source(Base):

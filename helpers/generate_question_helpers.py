@@ -46,7 +46,8 @@ def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords
     global_quiz_instructions = quiz.meta_prompt
 
     prompt = (f"Generate a list of {amount} quiz questions along with their correct answers, for a tool that helps "
-              f"educators create quiz questions efficiently. Make sure to have the exact amount of results!")
+              f"educators create quiz questions efficiently. Make sure to have the exact amount of results and"
+              f"limit your answers to the content you have just received!")
 
     if global_quiz_instructions:
         prompt += f"This quiz includes global instructions that apply to all question sets: {global_quiz_instructions}\n"

@@ -42,8 +42,19 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
     except Exception as e:
         source_handler.delete_quiz_source(new_quiz_source, db)
         source_handler.delete_source(new_source, db)
-        _delete_quiz(new_quiz, db)
+        _delete_quiz_from_db(new_quiz, db)
         raise HTTPException(status_code=500, detail='Internal server error')
+
+
+def delete_quiz(request: Request, quiz_id: str, db: Session):
+    user_id = request.state.user_id
+    quiz_to_delete = db.query(Quiz).filter(Quiz.quiz_id == quiz_id, Quiz.user_id == user_id).first()
+    if quiz_to_delete:
+        db.delete(quiz_to_delete)
+        db.commit()
+        return JSONResponse(status_code=200, content='Quiz successfully deleted')
+    else:
+        return HTTPException(status_code=404, detail='Quiz not found or user not authorized.')
 
 
 def _add_quiz_table(quiz_info: FormData, user_id, db: Session):
@@ -60,11 +71,13 @@ def _add_quiz_table(quiz_info: FormData, user_id, db: Session):
 
     return new_quiz
 
-def _delete_quiz(quiz: Quiz, db: Session):
+
+def _delete_quiz_from_db(quiz: Quiz, db: Session):
     to_delete = db.query(Quiz).filter(Quiz.quiz_id == quiz.quiz_id).first()
     if to_delete:
         db.delete(to_delete)
         db.commit()
+    
     return
 
 
