@@ -48,10 +48,7 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
 
 def delete_quiz(request: Request, quiz_id: str, db: Session):
     user_id = request.state.user_id
-    
-    
     quiz_to_delete = db.query(Quiz).filter(Quiz.quiz_id == quiz_id, Quiz.user_id == user_id).first()
-
     if quiz_to_delete:
         db.delete(quiz_to_delete)
         db.commit()
@@ -80,6 +77,7 @@ def _delete_quiz_from_db(quiz: Quiz, db: Session):
     if to_delete:
         db.delete(to_delete)
         db.commit()
+    
     return
 
 
