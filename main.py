@@ -50,6 +50,11 @@ async def get_quiz(request: Request, quiz_id: str, db: Session = Depends(get_db)
     return quiz_handler.get_quiz_info(request=request, quiz_id=quiz_id, db=db)
 
 
+@app.delete('/quiz')
+async def delete_quiz(request: Request, quiz_id: str, db: Session = Depends(get_db)):
+    return quiz_handler.delete_quiz(request=request, quiz_id=quiz_id, db=db)
+
+
 @app.get('/questions')
 async def get_questions(request: Request, quiz_id: str, db: Session = Depends(get_db)):
     return question_handler.get_quiz_questions(request=request, quiz_id=quiz_id, db=db)
