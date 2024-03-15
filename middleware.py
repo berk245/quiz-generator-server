@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 from helpers.auth_helpers import validate_jwt
 from cloudwatch_logger import cloudwatch_logger
 from fastapi import Request
+import json
+
 
 def setup_cors_middleware(app) -> None:
     app.add_middleware(
@@ -26,6 +28,7 @@ async def validate_token(request, call_next) -> JSONResponse:
             request.state.user_id = user_id
 
     except:
+        cloudwatch_logger.error('Invalid or expired token')
         return JSONResponse(status_code=401,
                             content={'error': 'Invalid or expired token'},
                             headers={'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*',
@@ -34,6 +37,7 @@ async def validate_token(request, call_next) -> JSONResponse:
         response = await call_next(request)
         return response
     except Exception as e:
+        cloudwatch_logger.error(f'Uncaught exception: {str(e)}')
         print('Uncaught exception while processing a request:', e)
 
     return JSONResponse(status_code=500, content={'error': 'Internal server error'},
@@ -42,6 +46,39 @@ async def validate_token(request, call_next) -> JSONResponse:
 
 
 async def log_request(request: Request, call_next):
-    cloudwatch_logger.info(f"Received request: {request.method} {request.url}")
-    response = await call_next(request)
-    return response
+    try:
+        if request.method == "OPTIONS":
+            # Check if it's a preflight request (OPTIONS method) and ignore it
+            return await call_next(request)
+
+        log_message = f"Received request: {request.method} {request.url}"
+
+        if request.method == "GET" and request.query_params:
+            log_message += f"\nURL parameters: {request.query_params}"
+
+        elif request.method == "POST":
+            body = await request.body()
+            # Check if the content type is JSON, handle form request separately
+            if "application/json" in request.headers.get("content-type", ""):
+                try:
+                    body_json = json.loads(body)
+                    if request.url.path in ["/login", "/signup"]:
+                        log_message = f"Auth request: {request.url.path}, email: {body_json.get('email')} "
+                    else:
+                        log_message += f"\nRequest body (JSON): {body_json}"
+                except json.JSONDecodeError:
+                    log_message += f"\nRequest body (JSON): Unable to parse JSON"
+
+        cloudwatch_logger.info(log_message)
+
+        # Call the next middleware or handler
+        response = await call_next(request)
+        return response
+
+    except Exception as e:
+        cloudwatch_logger.info(f'Request log failed. \n'
+                               f'Exception: {str(e)}')
+        # Call the next middleware or handler
+        response = await call_next(request)
+
+        return response

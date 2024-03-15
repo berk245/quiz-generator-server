@@ -4,21 +4,22 @@ from database.db_models import Quiz, Question
 from starlette.exceptions import HTTPException
 from helpers import vectorstore_helpers
 import uuid
+from cloudwatch_logger import cloudwatch_logger
 
 CHAIN_CACHE = {}
 
 
 def get_generated_questions(user_id: str, question_generation_settings, db: Session):
     quiz, amount, round_specific_instructions, keywords = _parse_generation_settings(question_generation_settings,
-                                                                                     user_id=user_id,
-                                                                                     db=db)
+                                                                                        user_id=user_id,
+                                                                                        db=db)
     _validate_inputs_and_authorization(quiz=quiz, amount=amount)
 
     existing_questions = db.query(Question).filter(Question.quiz_id == quiz.quiz_id).all()
 
     chain = _get_chain(quiz=quiz)
     prompt = _get_prompt(amount=amount, keywords=keywords, quiz=quiz, existing_questions=existing_questions,
-                         round_specific_instructions=round_specific_instructions)
+                            round_specific_instructions=round_specific_instructions)
     raw_response = chain.invoke(prompt)
     questions = _parse_questions(response=raw_response)
 
@@ -28,17 +29,24 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
         # may fail to provide a unique id at times.
         q['question_id'] = str(uuid.uuid4())
     return questions
+ 
 
 
 def _parse_generation_settings(question_generation_settings, user_id: str, db: Session):
-    quiz_id = question_generation_settings.get('quiz_id')
-    amount = question_generation_settings.get('amount')
-    round_specific_instructions = question_generation_settings.get('instructions')
-    keywords = question_generation_settings.get('keywords')
+    try:
+        quiz_id = question_generation_settings.get('quiz_id')
+        amount = question_generation_settings.get('amount')
+        round_specific_instructions = question_generation_settings.get('instructions')
+        keywords = question_generation_settings.get('keywords')
 
-    quiz = db.query(Quiz).filter(Quiz.user_id == user_id, Quiz.quiz_id == quiz_id).first()
+        quiz = db.query(Quiz).filter(Quiz.user_id == user_id, Quiz.quiz_id == quiz_id).first()
 
-    return quiz, amount, round_specific_instructions, keywords
+        cloudwatch_logger.info(f' Succesfully parsed question generation settings')
+        return quiz, amount, round_specific_instructions, keywords
+    except Exception as e:
+        cloudwatch_logger.error(f'Error while parsing question generating settings.'
+                                f'Details: {str(e)}')
+        raise e
 
 
 def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords=None,
