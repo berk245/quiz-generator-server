@@ -49,14 +49,19 @@ def get_documents_from_file(source_file: UploadFile, file_hash: str):
 
 
 def _get_retriever(quiz: Quiz):
-    index_name, namespace, embeddings = get_pinecone_config(quiz=quiz)
-    vectorstore = Pinecone.from_existing_index(
-        index_name=index_name,
-        namespace=namespace,
-        embedding=embeddings
-    )
-    retriever = vectorstore.as_retriever()
-    return retriever
+    try:
+        index_name, namespace, embeddings = get_pinecone_config(quiz=quiz)
+        cloudwatch_logger.info(f'Getting retriever index name: {index_name}')
+        vectorstore = Pinecone.from_existing_index(
+            index_name=index_name,
+            namespace=namespace,
+            embedding=embeddings
+        )
+        retriever = vectorstore.as_retriever()
+        return retriever
+    except Exception as e:
+        cloudwatch_logger.error(f'Error in _get_retriever method: {str(e)}')
+        raise e
 
 
 class GeneratedQuestion(BaseModel):
@@ -68,8 +73,6 @@ class GeneratedQuestion(BaseModel):
     difficulty: str = Field(description='The proposed difficulty of the question. Only possible options are easy, medium, hard')
     score: str = Field(description='The score of the question, defining the question quality. A value from 0 to 5, 5 being the best quality.')
     question_type: str = Field(description='Always set it as "multi"')
-
-
     
 
 class GeneratedQuestions(BaseModel):
@@ -77,6 +80,7 @@ class GeneratedQuestions(BaseModel):
 
 
 def get_conversation_chain(quiz: Quiz):
+    cloudwatch_logger.info(f'Attempting to get conversation chain for the quiz ID: {quiz.quiz_id}')
     retriever = _get_retriever(quiz=quiz)
 
     template = """Answer the question based only on the following context:
@@ -93,5 +97,7 @@ def get_conversation_chain(quiz: Quiz):
         | model
         | JsonOutputToolsParser()
     )
+
+    cloudwatch_logger.info(f'Chain successfully created')
 
     return chain
