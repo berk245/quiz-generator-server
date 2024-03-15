@@ -11,10 +11,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from loaders import PDFMinerPagesLoader
-
+from cloudwatch_logger import cloudwatch_logger
 
 def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: str):
-    
+    cloudwatch_logger.info('Trying to create the vector store.')
     documents = get_documents_from_file(source_file=source_file, file_hash=file_hash)
     index_name, namespace, embeddings = get_pinecone_config(quiz=new_quiz)
     
@@ -23,6 +23,7 @@ def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: 
         embedding=embeddings, 
         index_name=index_name, 
         namespace=namespace)
+    cloudwatch_logger.info('Vector store created successfully.')
     return vectorstore
     
 

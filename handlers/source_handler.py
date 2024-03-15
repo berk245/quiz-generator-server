@@ -34,14 +34,14 @@ def add_source_table(user_id: str, file: UploadFile, file_hash: str, db: Session
     return new_source
 
 
-
 def delete_source(source: Source, db: Session):
+    if not source.source_id:
+        return
     to_delete = db.query(Source).filter(Source.source_id == source.source_id).first()
     if to_delete:
         db.delete(to_delete)
         db.commit()
     return
-
 
 
 def add_quiz_source_table(new_source: Source, quiz_id: int, db: Session):
