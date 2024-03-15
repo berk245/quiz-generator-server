@@ -1,7 +1,8 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from helpers.auth_helpers import validate_jwt
-
+from cloudwatch_logger import cloudwatch_logger
+from fastapi import Request
 
 def setup_cors_middleware(app) -> None:
     app.add_middleware(
@@ -38,3 +39,9 @@ async def validate_token(request, call_next) -> JSONResponse:
     return JSONResponse(status_code=500, content={'error': 'Internal server error'},
                         headers={'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*',
                                  'Access-Control-Allow-Methods': '*'})
+
+
+async def log_request(request: Request, call_next):
+    cloudwatch_logger.info(f"Received request: {request.method} {request.url}")
+    response = await call_next(request)
+    return response
