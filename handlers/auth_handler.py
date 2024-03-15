@@ -6,6 +6,7 @@ from database.db_models import User
 from fastapi.responses import JSONResponse
 from helpers.auth_helpers import hash_password, verify_password, create_jwt, is_signup_data_valid
 
+
 async def handle_signup(request: SignupRequest, db: Session):
     try:
         if not is_signup_data_valid(request=request):

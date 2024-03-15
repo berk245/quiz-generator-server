@@ -27,17 +27,22 @@ async def validate_token(request, call_next) -> JSONResponse:
             # attach extracted user info to request for future access
             request.state.user_id = user_id
 
-            response = await call_next(request)
-            return response
-    except Exception as e:
-        print(f'Error in token validator midware. {e}')
-        cloudwatch_logger.error(f'Error in token validator midware. \n'
-                                f'Token: {request.headers.get("authorization")} \n'
-                                f'Exception: {e}')
+    except:
+        cloudwatch_logger.error('Invalid or expired token')
         return JSONResponse(status_code=401,
                             content={'error': 'Invalid or expired token'},
                             headers={'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*',
                                      'Access-Control-Allow-Methods': '*'})
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        cloudwatch_logger.error(f'Uncaught exception: {str(e)}')
+        print('Uncaught exception while processing a request:', e)
+
+    return JSONResponse(status_code=500, content={'error': 'Internal server error'},
+                        headers={'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*',
+                                 'Access-Control-Allow-Methods': '*'})
 
 
 async def log_request(request: Request, call_next):
@@ -72,7 +77,7 @@ async def log_request(request: Request, call_next):
 
     except Exception as e:
         cloudwatch_logger.info(f'Request log failed. \n'
-                               f'Exception: {e}')
+                               f'Exception: {str(e)}')
         # Call the next middleware or handler
         response = await call_next(request)
 
