@@ -44,31 +44,30 @@ def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords
                 round_specific_instructions=None):
     global_quiz_instructions = quiz.meta_prompt
 
-    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers, for a tool that helps "
-              f"educators create quiz questions efficiently. Make sure to have the exact amount of results and"
-              f"limit your answers to the content you have just received!")
-
+    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers, using the documents retrieved from the Pinecone vector store. Ensure that the questions are relevant to the educational context and focus on key concepts.")
     if global_quiz_instructions:
-        prompt += f"This quiz includes global instructions that apply to all question sets: {global_quiz_instructions}\n"
+        prompt += f"Include the following global instructions for all question sets: {global_quiz_instructions}\n"
 
     if round_specific_instructions:
-        prompt += (f"In addition, there are some specific instructions that should be applied only to this round of "
-                   f"question generation. Be sure to follow them: {round_specific_instructions}.")
-        prompt += "Ensure that each generated question adheres to all the instructions mentioned above."
+        prompt += (f"Additionally, for this round of question generation, follow these specific instructions: {round_specific_instructions}.")
+        prompt += "Ensure that each generated question adheres to all the instructions provided."
 
     if keywords:
-        prompt += f" While generating questions, pay special attention and focus to the following keywords and concepts: {', '.join(keywords)}."
+        prompt += f"Pay special attention to the following keywords and concepts: {', '.join(keywords)}."
 
     if existing_questions:
-        prompt += 'The following is a list of questions that are already in the quiz. Please do not have duplicate quesitons.'
+        prompt += "The following questions are already in the quiz. Avoid duplicating them:"
         for question in existing_questions:
-            prompt += f'Question: {question.question_text}, correct answer: {question.correct_answer}.'
+            prompt += f"Question: {question.question_text}, Correct Answer: {question.correct_answer}."
 
-    prompt += "Ensure that the generated questions are relevant in a quiz context, excluding irrelevant details such as"
-    prompt += "research questions, methods, table of contents, authors, and the purpose of sections in the documents."
+    prompt += "Exclude irrelevant details such as research questions, methods, etc., and focus on generating questions relevant to the educational context."
 
-    prompt += "Do NOT include any identifiers in multiple choices or numbering (A), B), C) etc or 1,2,3)."
-    prompt += "Just include the potential answers without anything else."
+    prompt += "If relevant questions cannot be generated from the context, indicate so rather than providing irrelevant outputs."
+
+    prompt += "Do NOT include identifiers in multiple choices or numbering (e.g., (A), (B), (C), etc.). Just include potential answers without any additional formatting."
+
+    prompt += "Avoid generating random trivia questions."
+
 
     return prompt
 
@@ -104,8 +103,7 @@ def get_conversation_chain(quiz: Quiz):
         | JsonOutputToolsParser()
     )
 
-    cloudwatch_logger.info(f'Chain successfully created')
-
+    cloudwatch_logger.info(f'Chain successfully created {chain}')
     return chain
 
 
