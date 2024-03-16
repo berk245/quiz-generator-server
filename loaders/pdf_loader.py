@@ -8,12 +8,6 @@ from langchain.document_loaders.base import BaseLoader
 
 
 class PDFMinerPagesLoader(BaseLoader):
-    """Loads a PDF with pdfminer.
-    Loader also stores page numbers in meta data.
-    Better than PyPDFLoader at detecting paragraphs and separating them with \n.
-    Copied and adjusted from langchain's PyPDFLoader
-    """
-
     def __init__(self, file, file_name, file_hash=''):
         self.file_hash = file_hash
         self.file_name = file_name

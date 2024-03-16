@@ -1,7 +1,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from helpers.auth_helpers import validate_jwt
-from cloudwatch_logger import cloudwatch_logger
+from config.cloudwatch_logger import cloudwatch_logger
 from fastapi import Request
 import json
 from dotenv import load_dotenv

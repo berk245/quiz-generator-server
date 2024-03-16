@@ -2,12 +2,12 @@ from fastapi import FastAPI, Depends, Request
 from models.auth import LoginRequest, SignupRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from middleware import setup_cors_middleware, validate_token, log_request
+from config.middleware import setup_cors_middleware, validate_token, log_request
 from handlers.auth_handler import handle_signup, handle_login
-from database.db import get_db
+from config.db import get_db
 from handlers import quiz_handler, source_handler, question_handler
 from fastapi import UploadFile, File
-from cloudwatch_logger import cloudwatch_logger
+from config.cloudwatch_logger import cloudwatch_logger
 
 app = FastAPI()
 setup_cors_middleware(app)

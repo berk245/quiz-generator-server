@@ -4,8 +4,8 @@ from models.db_models import Quiz
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import Pinecone
-from loaders import PDFMinerPagesLoader
-from cloudwatch_logger import cloudwatch_logger
+from loaders.pdf_loader import PDFMinerPagesLoader
+from config.cloudwatch_logger import cloudwatch_logger
 import time
 
 MAX_RETRY_ATTEMPTS = 3
