@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from starlette.datastructures import FormData
 from starlette.exceptions import HTTPException
 
-from database.db_models import Quiz
+from models.db_models import Quiz
 from helpers.quiz_helpers import serialize_quiz
 
 from . import source_handler

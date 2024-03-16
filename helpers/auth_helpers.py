@@ -1,6 +1,6 @@
 import bcrypt
 import jwt
-from http_models.auth import SignupRequest
+from models.auth import SignupRequest
 import re
 
 def hash_password(password):

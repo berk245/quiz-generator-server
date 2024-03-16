@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends, Request
-from http_models.auth import LoginRequest, SignupRequest
+from models.auth import LoginRequest, SignupRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from middleware import setup_cors_middleware, validate_token, log_request

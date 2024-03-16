@@ -4,8 +4,8 @@ import pandas as pd
 from fastapi import Request
 from io import BytesIO
 
-from database.db_models import Question, Quiz
-from helpers.question_helpers import serialize_questions
+from models.db_models import Question, Quiz
+from helpers.question_helpers import serialize_questions, create_question_table
 from starlette.exceptions import HTTPException
 from helpers.generate_question_helpers import get_generated_questions
 from cloudwatch_logger import cloudwatch_logger
@@ -29,7 +29,6 @@ def get_quiz_questions(request: Request, quiz_id: str, db: Session):
 async def edit_question(request: Request, db: Session):
     try:
         user_id = request.state.user_id
-
         updated_question = await request.json()
 
         query = (
@@ -40,7 +39,6 @@ async def edit_question(request: Request, db: Session):
 
         # Attempt to get the question
         db_question = query.first()
-
         if not db_question:
             raise HTTPException(status_code=404, detail="Question not found or you do not have permission to update it")
 
@@ -50,7 +48,6 @@ async def edit_question(request: Request, db: Session):
 
         # Flag the question as edited for statistics
         db_question.is_edited = True
-
         db.commit()
 
         return JSONResponse(status_code=200, content={'data': 'Update successful'})
@@ -89,28 +86,12 @@ async def add_question_to_quiz(request: Request, db: Session):
             return HTTPException(status_code=404, detail='Quiz not found')
 
         # Create a Question table linked to the quiz
-        _add_question_table(question_data=new_question_data, quiz_id=quiz_id, db=db)
+        create_question_table(question_data=new_question_data, quiz_id=quiz_id, db=db)
 
         return JSONResponse(status_code=200, content={'data': 'Question added successfully'})
     except Exception as e:
         cloudwatch_logger.error(f'Error adding question to quiz: {str(e)}')
         raise
-
-
-def _add_question_table(question_data: Question, quiz_id: str, db: Session):
-    new_question = Question(
-        quiz_id=quiz_id,
-        question_type=question_data.get('question_type'),
-        question_text=question_data.get('question_text'),
-        multiple_choices=question_data.get('multiple_choices'),
-        correct_answer=question_data.get('correct_answer'),
-        difficulty=question_data.get('difficulty'),
-        score=question_data.get('score'),
-    )
-    db.add(new_question)
-    db.commit()
-
-    return
 
 
 async def get_questions_as_csv(request: Request, db: Session):

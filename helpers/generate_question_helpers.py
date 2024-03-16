@@ -1,10 +1,19 @@
 from sqlalchemy.orm import Session
 
-from database.db_models import Quiz, Question
+from models.db_models import Quiz, Question
 from starlette.exceptions import HTTPException
 from helpers import vectorstore_helpers
 import uuid
 from cloudwatch_logger import cloudwatch_logger
+
+from models.llm import GeneratedQuestions
+
+from langchain.output_parsers.openai_tools import JsonOutputToolsParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.prompts import ChatPromptTemplate
+
+from langchain_openai import ChatOpenAI
+
 
 CHAIN_CACHE = {}
 
@@ -31,6 +40,72 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
     return questions
  
 
+def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords=None,
+                round_specific_instructions=None):
+    global_quiz_instructions = quiz.meta_prompt
+
+    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers, using the documents retrieved from the Pinecone vector store. Ensure that the questions are relevant to the educational context and focus on key concepts.")
+    if global_quiz_instructions:
+        prompt += f"Include the following global instructions for all question sets: {global_quiz_instructions}\n"
+
+    if round_specific_instructions:
+        prompt += (f"Additionally, for this round of question generation, follow these specific instructions: {round_specific_instructions}.")
+        prompt += "Ensure that each generated question adheres to all the instructions provided."
+
+    if keywords:
+        prompt += f"Pay special attention to the following keywords and concepts: {', '.join(keywords)}."
+
+    if existing_questions:
+        prompt += "The following questions are already in the quiz. Avoid duplicating them:"
+        for question in existing_questions:
+            prompt += f"Question: {question.question_text}, Correct Answer: {question.correct_answer}."
+
+    prompt += "Exclude irrelevant details such as research questions, methods, etc., and focus on generating questions relevant to the educational context."
+
+    prompt += "If relevant questions cannot be generated from the context, indicate so rather than providing irrelevant outputs."
+
+    prompt += "Do NOT include identifiers in multiple choices or numbering (e.g., (A), (B), (C), etc.). Just include potential answers without any additional formatting."
+
+    prompt += "Avoid generating random trivia questions."
+
+
+    return prompt
+
+
+def _get_chain(quiz: Quiz | None):
+    global CHAIN_CACHE
+    if quiz.quiz_id in CHAIN_CACHE:
+        # Get chain from cache
+        chain = CHAIN_CACHE[quiz.quiz_id]
+    else:
+        # Initialize chain and cache
+        chain = get_conversation_chain(quiz=quiz)
+        CHAIN_CACHE[quiz.quiz_id] = chain
+    return chain
+
+
+def get_conversation_chain(quiz: Quiz):
+    cloudwatch_logger.info(f'Attempting to get conversation chain for the quiz ID: {quiz.quiz_id}')
+    retriever = vectorstore_helpers.get_retriever(quiz=quiz)
+
+    template = """Answer the question based only on the following context:
+    {context}
+
+    Question: {question}
+    """
+    prompt = ChatPromptTemplate.from_template(template)
+    model = ChatOpenAI().bind_tools([GeneratedQuestions])
+
+    chain = (
+        {"context": retriever, 'question': RunnablePassthrough()}
+        | prompt
+        | model
+        | JsonOutputToolsParser()
+    )
+
+    cloudwatch_logger.info(f'Chain successfully created')
+    return chain
+
 
 def _parse_generation_settings(question_generation_settings, user_id: str, db: Session):
     try:
@@ -49,39 +124,6 @@ def _parse_generation_settings(question_generation_settings, user_id: str, db: S
         raise e
 
 
-def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords=None,
-                round_specific_instructions=None):
-    global_quiz_instructions = quiz.meta_prompt
-
-    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers, for a tool that helps "
-              f"educators create quiz questions efficiently. Make sure to have the exact amount of results and"
-              f"limit your answers to the content you have just received!")
-
-    if global_quiz_instructions:
-        prompt += f"This quiz includes global instructions that apply to all question sets: {global_quiz_instructions}\n"
-
-    if round_specific_instructions:
-        prompt += (f"In addition, there are some specific instructions that should be applied only to this round of "
-                   f"question generation. Be sure to follow them: {round_specific_instructions}.")
-        prompt += "Ensure that each generated question adheres to all the instructions mentioned above."
-
-    if keywords:
-        prompt += f" While generating questions, pay special attention and focus to the following keywords and concepts: {', '.join(keywords)}."
-
-    if existing_questions:
-        prompt += 'The following is a list of questions that are already in the quiz. Please do not have duplicate quesitons.'
-        for question in existing_questions:
-            prompt += f'Question: {question.question_text}, correct answer: {question.correct_answer}.'
-
-    prompt += "Ensure that the generated questions are relevant in a quiz context, excluding irrelevant details such as"
-    prompt += "research questions, methods, table of contents, authors, and the purpose of sections in the documents."
-
-    prompt += "Do NOT include any identifiers in multiple choices or numbering (A), B), C) etc or 1,2,3)."
-    prompt += "Just include the potential answers without anything else."
-
-    return prompt
-
-
 def _validate_inputs_and_authorization(quiz: Quiz | None, amount: str):
     if amount is None:
         raise HTTPException(status_code=400, detail="Bad request.")
@@ -91,17 +133,6 @@ def _validate_inputs_and_authorization(quiz: Quiz | None, amount: str):
     return True
 
 
-def _get_chain(quiz: Quiz | None):
-    global CHAIN_CACHE
-    if quiz.quiz_id in CHAIN_CACHE:
-        # Get chain from cache
-        chain = CHAIN_CACHE[quiz.quiz_id]
-    else:
-        # Initialize chain and cache
-        chain = vectorstore_helpers.get_conversation_chain(quiz=quiz)
-        CHAIN_CACHE[quiz.quiz_id] = chain
-    return chain
-
-
 def _parse_questions(response):
     return response[0].get('args').get('questions')
+
