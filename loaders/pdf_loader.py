@@ -1,22 +1,17 @@
 import io
-from typing import List
-
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
 from langchain.docstore.document import Document
-from langchain.document_loaders.base import BaseLoader
+from fastapi import UploadFile
 
 
-class PDFMinerPagesLoader(BaseLoader):
-    def __init__(self, file, file_name, file_hash=''):
-        self.file_hash = file_hash
-        self.file_name = file_name
-        self.pdf_file_obj = file.file.read()
-
-    def load(self) -> List[Document]:
-        documents = []
-        with io.BytesIO(self.pdf_file_obj) as file:
-            for i, page_layout in enumerate(extract_pages(file)):
+def get_documents(source_file: UploadFile, file_hash: str):
+    documents = []
+    
+    file_content = source_file.file.read()
+    
+    with io.BytesIO(file_content) as file:
+        for i, page_layout in enumerate(extract_pages(file)):
                 page_content = ''
                 for element in page_layout:
                     if isinstance(element, LTTextContainer):
@@ -26,8 +21,9 @@ class PDFMinerPagesLoader(BaseLoader):
                     continue
                 document = Document(
                     page_content=page_content,
-                    metadata={'source': '{} (page {})'.format(self.file_name, i + 1),
+                    metadata={'source': '{} (page {})'.format(source_file.filename, i + 1),
                               'page': i + 1,
-                              'source_file_hash': self.file_hash})
+                              'source_file_hash': file_hash})
                 documents.append(document)
+        print(f'Returning documents {documents}')
         return documents
