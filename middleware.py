@@ -4,16 +4,26 @@ from helpers.auth_helpers import validate_jwt
 from cloudwatch_logger import cloudwatch_logger
 from fastapi import Request
 import json
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+# Local development env variable is only defined locally
+IS_LOCALHOST = os.getenv('LOCAL_DEVELOPMENT') is not None 
 
 def setup_cors_middleware(app) -> None:
-    app.add_middleware(
-        CORSMiddleware,
-        # allow_origins=['*'],
-        allow_credentials=True,
-        allow_headers=['Authorization'],
-        allow_methods=['*']
-    )
+    middleware_params = {
+        "allow_credentials": True,
+        "allow_headers": ["Authorization"],
+        "allow_methods": ["*"]
+    }
+
+    if IS_LOCALHOST:
+        middleware_params["allow_origins"] = ['*']
+
+    app.add_middleware(CORSMiddleware, **middleware_params)
+    
 
 
 async def validate_token(request, call_next) -> JSONResponse:
