@@ -11,7 +11,7 @@ from helpers.quiz_helpers import serialize_quiz
 from . import source_handler
 from helpers.quiz_helpers import get_file_hash
 from helpers.vectorstore_helpers import add_quiz_to_vectorstore
-from cloudwatch_logger import cloudwatch_logger
+from config.cloudwatch_logger import cloudwatch_logger
 
 
 load_dotenv()

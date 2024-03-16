@@ -8,7 +8,7 @@ from models.db_models import Question, Quiz
 from helpers.question_helpers import serialize_questions, create_question_table
 from starlette.exceptions import HTTPException
 from helpers.generate_question_helpers import get_generated_questions
-from cloudwatch_logger import cloudwatch_logger
+from config.cloudwatch_logger import cloudwatch_logger
 
 
 def get_quiz_questions(request: Request, quiz_id: str, db: Session):

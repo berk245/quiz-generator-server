@@ -4,9 +4,9 @@ from models.db_models import Quiz
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import Pinecone
-from loaders import PDFMinerPagesLoader
-from cloudwatch_logger import cloudwatch_logger
+from config.cloudwatch_logger import cloudwatch_logger
 import time
+from loaders import pdf_loader
 
 MAX_RETRY_ATTEMPTS = 3
 RETRY_DELAY_SECONDS = 5
@@ -39,9 +39,16 @@ def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: 
                 time.sleep(RETRY_DELAY_SECONDS)
     
 
-def _get_raw_pdf_text(source_file: UploadFile, file_hash: str):
-    loader = PDFMinerPagesLoader(file=source_file, file_name=source_file.filename, file_hash=file_hash)
-    return loader.load()
+
+
+
+def get_documents_from_file(source_file: UploadFile, file_hash: str):
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, length_function=len,
+                                                   is_separator_regex=False)
+    documents = pdf_loader.get_documents(source_file=source_file, file_hash=file_hash)
+    split_documents = text_splitter.split_documents(documents=documents)
+
+    return split_documents
 
 
 def get_pinecone_config(quiz: Quiz):
@@ -50,15 +57,6 @@ def get_pinecone_config(quiz: Quiz):
     embeddings = OpenAIEmbeddings(model='text-embedding-ada-002')
     
     return index_name, namespace, embeddings
-
-
-def get_documents_from_file(source_file: UploadFile, file_hash: str):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, length_function=len,
-                                                   is_separator_regex=False)
-    split_documents = text_splitter.split_documents(_get_raw_pdf_text(source_file=source_file, file_hash=file_hash))
-
-    return split_documents
-
 
 def get_retriever(quiz: Quiz):
     try:

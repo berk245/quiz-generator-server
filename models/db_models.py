@@ -47,7 +47,7 @@ class Source(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     user = relationship("User", back_populates="sources")
-    quiz_sources = relationship("QuizSource", back_populates="source")
+    quiz_sources = relationship("QuizSource", cascade='all, delete', back_populates="source")
 
 
 class QuizSource(Base):
