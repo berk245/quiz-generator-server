@@ -39,9 +39,6 @@ def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: 
                 time.sleep(RETRY_DELAY_SECONDS)
     
 
-
-
-
 def get_documents_from_file(source_file: UploadFile, file_hash: str):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, length_function=len,
                                                    is_separator_regex=False)
@@ -57,6 +54,7 @@ def get_pinecone_config(quiz: Quiz):
     embeddings = OpenAIEmbeddings(model='text-embedding-ada-002')
     
     return index_name, namespace, embeddings
+
 
 def get_retriever(quiz: Quiz):
     try:

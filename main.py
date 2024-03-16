@@ -3,9 +3,8 @@ from models.auth import LoginRequest, SignupRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from config.middleware import setup_cors_middleware, validate_token, log_request
-from handlers.auth_handler import handle_signup, handle_login
 from config.db import get_db
-from handlers import quiz_handler, source_handler, question_handler
+from handlers import auth_handler, quiz_handler, source_handler, question_handler
 from fastapi import UploadFile, File
 from config.cloudwatch_logger import cloudwatch_logger
 
@@ -23,12 +22,12 @@ async def root():
 
 @app.post("/login")
 async def login(body: LoginRequest, db: Session = Depends(get_db)) -> JSONResponse:
-    return await handle_login(request=body, db=db)
+    return await auth_handler.login(request=body, db=db)
 
 
 @app.post("/signup")
 async def signup(body: SignupRequest, db: Session = Depends(get_db)) -> JSONResponse:
-    return await handle_signup(request=body, db=db)
+    return await auth_handler.signup(request=body, db=db)
 
 
 @app.get('/quizzes')
@@ -81,3 +80,8 @@ async def add_generated_questions_to_quiz(request: Request, db: Session = Depend
 @app.post('/questions/csv')
 async def get_questions_as_csv(request: Request, db: Session = Depends(get_db)):
     return await question_handler.get_questions_as_csv(request=request, db=db)
+
+
+@app.delete('/cypress-user')
+async def delete_user(request: Request, db: Session = Depends(get_db)):
+    return await auth_handler.delete_cypress_user(request=request, db=db)
