@@ -103,7 +103,7 @@ def get_conversation_chain(quiz: Quiz):
         | JsonOutputToolsParser()
     )
 
-    cloudwatch_logger.info(f'Chain successfully created {chain}')
+    cloudwatch_logger.info(f'Chain successfully created')
     return chain
 
 

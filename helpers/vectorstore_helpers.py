@@ -18,12 +18,9 @@ def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: 
     for attempt in range(MAX_RETRY_ATTEMPTS):
         try:
             documents = get_documents_from_file(source_file=source_file, file_hash=file_hash)
-            print('=======')
-            print(documents)
-            print('=======')
             cloudwatch_logger.info(f'Created documents from the file.')
             index_name, namespace, embeddings = get_pinecone_config(quiz=new_quiz)
-            cloudwatch_logger.info(f'Set up pinecone config.')
+            cloudwatch_logger.info(f'Pinecone config is setup name: {index_name}, namespace: {namespace}, embeddings: {embeddings}.')
 
             vectorstore = Pinecone.from_documents(
                 documents=documents, 
