@@ -2,7 +2,7 @@ from fastapi import Request, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
 
-from database.db_models import Source, QuizSource
+from models.db_models import Source, QuizSource
 from helpers import source_helpers
 
 

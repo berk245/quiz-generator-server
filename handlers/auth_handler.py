@@ -1,8 +1,8 @@
 from fastapi import HTTPException
-from http_models.auth import SignupRequest, LoginRequest
+from models.auth import SignupRequest, LoginRequest
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from database.db_models import User
+from models.db_models import User
 from fastapi.responses import JSONResponse
 from helpers.auth_helpers import hash_password, verify_password, create_jwt, is_signup_data_valid
 

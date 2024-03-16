@@ -1,5 +1,6 @@
 from typing import Type, List
-from database.db_models import Question
+from models.db_models import Question
+from sqlalchemy.orm import Session
 
 
 def serialize_questions(questions: List[Type[Question]]):
@@ -19,3 +20,19 @@ def serialize_questions(questions: List[Type[Question]]):
             }
         )
     return serialized
+
+
+def create_question_table(question_data: Question, quiz_id: str, db: Session):
+    new_question = Question(
+        quiz_id=quiz_id,
+        question_type=question_data.get('question_type'),
+        question_text=question_data.get('question_text'),
+        multiple_choices=question_data.get('multiple_choices'),
+        correct_answer=question_data.get('correct_answer'),
+        difficulty=question_data.get('difficulty'),
+        score=question_data.get('score'),
+    )
+    db.add(new_question)
+    db.commit()
+
+    return
