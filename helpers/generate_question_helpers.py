@@ -77,26 +77,8 @@ def _get_template(quiz: Quiz):
     template = (
         "You are assisting educators in creating quiz questions from teaching materials. "
         "Ensure questions are relevant to the educational context and focused on key concepts. "
-        "Consider the provided quiz title, description, and user instructions as guidelines for question generation."
     )
     
-    if quiz.quiz_description:
-        template += f"\n\nQuiz Description: {quiz.quiz_description}"
-    
-    if quiz.keywords:
-        template += f"\n\nKeywords: {', '.join(quiz.keywords)}. Pay special attention to these concepts."
-    
-    if quiz.meta_prompt:
-        template += f"\n\nUser Instructions: {quiz.meta_prompt}\n"
-    
-    template += (
-        "\nExclude irrelevant details such as research questions, methods, etc. "
-        "Focus on generating questions that are directly related to the educational material."
-        "\nIf relevant questions cannot be generated from the context, indicate so rather than providing irrelevant outputs."
-        "\nDo NOT include identifiers in multiple choices or numbering. "
-        "Just include potential answers without any additional formatting."
-    )
-
     template += (
         "\n\nCreate questions based on the following context:\n"
         "{context}\n"
@@ -136,12 +118,18 @@ def _parse_questions(response):
     return response[0].get('args').get('questions')
 
 
-def _get_prompt(amount, existing_questions: list[Question], round_specific_instructions=None):
+def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_specific_instructions=None):
 
     prompt = (
         f"Generate a list of {amount} quiz questions along with their correct answers. "
         "Ensure that the questions are relevant to the educational context and focus on key concepts."
     )
+    
+    if quiz.keywords:
+        prompt += f"\n\nKeywords: {', '.join(quiz.keywords)}. Pay special attention to these concepts."
+    
+    if quiz.meta_prompt:
+        prompt += f"\n\nUser Instructions: {quiz.meta_prompt}\n"
 
     if round_specific_instructions:
         prompt += (
@@ -155,8 +143,20 @@ def _get_prompt(amount, existing_questions: list[Question], round_specific_instr
             prompt += f"Question: {question.question_text}, Correct Answer: {question.correct_answer}.\n"
 
     prompt += (
-        "\n\nAvoid generating random trivia questions. "
+        "\nExclude irrelevant details such as research questions, methods, authors, table of contents, chapter titles and contents, etc. "
+        "\nFocus on generating questions that will be in a quiz to test general knowledge about the provided material."
+    )
+    
+    prompt += (
+        "\nDo NOT include identifiers in multiple choices or numbering such as A, B, C or 1, 2, 3. "
+        "Just include potential answers separated by commas, without any additional formatting."
+    )
+    
+    prompt += (
+        "\n\nAvoid generating random trivia questions, such as 'What is the capital city of Paris?'"
         "Focus on creating questions directly related to the educational material provided in the context."
+        "In case there is no context to generate questions from, just output 'No relevant context' as question, and 'N/A' as answers."
+        "Never generate random, irrelevant questions."
     )
 
     return prompt
