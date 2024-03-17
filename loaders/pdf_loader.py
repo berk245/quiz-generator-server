@@ -25,5 +25,4 @@ def get_documents(source_file: UploadFile, file_hash: str):
                               'page': i + 1,
                               'source_file_hash': file_hash})
                 documents.append(document)
-        print(f'Returning documents {documents}')
         return documents
