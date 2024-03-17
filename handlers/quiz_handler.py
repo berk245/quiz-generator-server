@@ -78,6 +78,25 @@ def delete_quiz(request: Request, quiz_id: str, db: Session):
         raise e
 
 
+def get_quiz_info(request: Request, quiz_id: str, db: Session):
+    try:
+        user_id = request.state.user_id
+
+        quiz = db.query(Quiz).filter(Quiz.user_id == user_id,
+                                     Quiz.quiz_id == quiz_id).first()
+
+        if not quiz:
+            raise HTTPException(detail='Quiz not found', status_code=404)
+
+        quiz_sources = source_handler.get_quiz_sources(quiz_id=quiz_id, db=db)
+
+        return JSONResponse(status_code=200, content={'data': {"quiz": serialize_quiz(quiz), "sources": quiz_sources}})
+    except Exception as e:
+        cloudwatch_logger.error(f'Error while accessing quiz info\n'
+                                f'Details: {str(e)}')
+        raise e
+
+
 def _add_quiz_table(quiz_info: FormData, user_id, db: Session):
     new_quiz = Quiz(
         quiz_title=quiz_info.get('quiz_title'),
@@ -100,22 +119,3 @@ def _delete_quiz_from_db(quiz: Quiz, db: Session):
         db.commit()
     
     return
-
-
-def get_quiz_info(request: Request, quiz_id: str, db: Session):
-    try:
-        user_id = request.state.user_id
-
-        quiz = db.query(Quiz).filter(Quiz.user_id == user_id,
-                                     Quiz.quiz_id == quiz_id).first()
-
-        if not quiz:
-            raise HTTPException(detail='Quiz not found', status_code=404)
-
-        quiz_sources = source_handler.get_quiz_sources(quiz_id=quiz_id, db=db)
-
-        return JSONResponse(status_code=200, content={'data': {"quiz": serialize_quiz(quiz), "sources": quiz_sources}})
-    except Exception as e:
-        cloudwatch_logger.error(f'Error while accessing quiz info\n'
-                                f'Details: {str(e)}')
-        raise e
