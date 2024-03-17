@@ -75,40 +75,34 @@ def _initialize_conversation_chain(quiz: Quiz):
 
 
 def _get_template(quiz: Quiz):
-    template = (f'You are a helpful assistant for educators who want to automate the process of quiz creation from'
-                f'their teaching material. You will get the relevant parts of the teaching material as the user wants '
-                f'to generate questions. A user may generate questions multiple rounds. The title of this quiz is '
-                f'{quiz.quiz_title}, which may or may not be relevant to the quiz topic. It is possible that the user'
-                f' names it as "First Quiz", which has nothing to do with the context or the content of the quiz. Try '
-                f'to be aware of these cases and use the quiz title information only when it makes sense.')
+    template = (
+        "You are assisting educators in creating quiz questions from teaching materials. "
+        "Ensure questions are relevant to the educational context and focused on key concepts. "
+        "Consider the provided quiz title, description, and user instructions as guidelines for question generation."
+    )
     
     if quiz.quiz_description:
-        template += f'This is the description for the provided quiz: {quiz.quiz_description}'
+        template += f"\n\nQuiz Description: {quiz.quiz_description}"
     
     if quiz.keywords:
-        template += (f'Here are the keywords from that the user provided. These should be the main focus on the '
-                     f'questions that will be created: {quiz.keywords}. Pay special attention to these words and '
-                     f'concepts.')
+        template += f"\n\nKeywords: {', '.join(quiz.keywords)}. Pay special attention to these concepts."
     
     if quiz.meta_prompt:
-        template += (f"Lastly, these are the quiz instructions provided by the user, that should be taken into account "
-                     f"for all generated questions: {quiz.meta_prompt}\n")
+        template += f"\n\nUser Instructions: {quiz.meta_prompt}\n"
     
-    template += ("Exclude irrelevant details such as research questions, methods, etc., and focus on generating "
-                 "questions relevant to the educational context.")
+    template += (
+        "\nExclude irrelevant details such as research questions, methods, etc. "
+        "Focus on generating questions that are directly related to the educational material."
+        "\nIf relevant questions cannot be generated from the context, indicate so rather than providing irrelevant outputs."
+        "\nDo NOT include identifiers in multiple choices or numbering. "
+        "Just include potential answers without any additional formatting."
+    )
 
-    template += ("If relevant questions cannot be generated from the context, indicate so rather than providing "
-                 "irrelevant outputs.")
-
-    template += ("Do NOT include identifiers in multiple choices or numbering (e.g., (A), (B), (C), etc.). "
-                 "Just include potential answers without any additional formatting.")
-
-    template += """
-    Create questions based on the following context
-    {context}
-
-    Question: {question}
-    """
+    template += (
+        "\n\nCreate questions based on the following context:\n"
+        "{context}\n"
+        "\nQuestion: {question}"
+    )
     
     return template
 
