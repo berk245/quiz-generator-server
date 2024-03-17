@@ -46,12 +46,12 @@ def _get_chain(quiz: Quiz | None):
     if quiz.quiz_id in CHAIN_CACHE:
         # Get chain from cache
         chain = CHAIN_CACHE[quiz.quiz_id]
-        cloudwatch_logger.info(f'Got chain from the cache: {chain}')
+        cloudwatch_logger.info(f'Retrieved chain from the cache')
     else:
         # Initialize chain and cache
         chain = _initialize_conversation_chain(quiz=quiz)
         CHAIN_CACHE[quiz.quiz_id] = chain
-        cloudwatch_logger.info(f'Initialized the chain and stored in the cache: {chain}')
+        cloudwatch_logger.info(f'Initialized the chain and stored it in the cache')
     return chain
 
 
