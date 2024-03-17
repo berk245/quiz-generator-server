@@ -7,14 +7,11 @@ from langchain_pinecone import Pinecone
 from config.cloudwatch_logger import cloudwatch_logger
 import time
 from loaders import pdf_loader
-
-MAX_RETRY_ATTEMPTS = 3
-RETRY_DELAY_SECONDS = 5
+from constants import MAX_RETRY_ATTEMPTS, RETRY_DELAY_SECONDS
 
 
 def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: str):
     cloudwatch_logger.info('Trying to create the vector store.')
-
     for attempt in range(MAX_RETRY_ATTEMPTS):
         try:
             documents = get_documents_from_file(source_file=source_file, file_hash=file_hash)
@@ -35,8 +32,8 @@ def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: 
                 cloudwatch_logger.error(f'Failed to create the vector store after {MAX_RETRY_ATTEMPTS} attempts: {e}')
                 raise
             else:
-                cloudwatch_logger.warning(f'Connection error encountered, attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS}: {e}. Retrying in {RETRY_DELAY_SECONDS} seconds...')
-                time.sleep(RETRY_DELAY_SECONDS)
+                cloudwatch_logger.warning(f'Connection error encountered, attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS}: {e}. Retrying in {(attempt+1) * RETRY_DELAY_SECONDS} seconds...')
+                time.sleep((attempt+1) * RETRY_DELAY_SECONDS)
     
 
 def get_documents_from_file(source_file: UploadFile, file_hash: str):
