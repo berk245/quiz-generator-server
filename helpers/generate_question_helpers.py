@@ -26,8 +26,7 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
 
     existing_questions = db.query(Question).filter(Question.quiz_id == quiz.quiz_id).all()
 
-    prompt = _get_prompt(amount=amount, keywords=keywords, quiz=quiz, existing_questions=existing_questions,
-                         round_specific_instructions=round_specific_instructions)
+    prompt = _get_prompt(amount=amount, existing_questions=existing_questions, round_specific_instructions=round_specific_instructions)
     chain = _get_chain(quiz=quiz)
 
     raw_response = chain.invoke(prompt)
@@ -137,26 +136,29 @@ def _parse_questions(response):
     return response[0].get('args').get('questions')
 
 
-def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords=None,
-                round_specific_instructions=None):
+def _get_prompt(amount, existing_questions: list[Question], round_specific_instructions=None):
 
-    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers. Ensure that the questions are relevant to the educational "
-              f"context and focus on key concepts.")
-
+    prompt = (
+        f"Generate a list of {amount} quiz questions along with their correct answers. "
+        "Ensure that the questions are relevant to the educational context and focus on key concepts."
+    )
 
     if round_specific_instructions:
-        prompt += (f"Additionally, for this round of question generation, follow these "
-                   f"specific instructions: {round_specific_instructions}.")
-        prompt += "Ensure that each generated question adheres to all the instructions provided."
+        prompt += (
+            f"\n\nFor this round of question generation, follow these specific instructions: "
+            f"{round_specific_instructions}. Ensure that each generated question adheres to all the provided instructions."
+        )
 
     if existing_questions:
-        prompt += "The following questions are already in the quiz. Avoid duplicating them:"
+        prompt += "\n\nThe following questions are already in the quiz. Avoid duplicating them:\n"
         for question in existing_questions:
-            prompt += f"Question: {question.question_text}, Correct Answer: {question.correct_answer}."
+            prompt += f"Question: {question.question_text}, Correct Answer: {question.correct_answer}.\n"
 
-   
-    prompt += "Avoid generating random trivia questions."
-
+    prompt += (
+        "\n\nAvoid generating random trivia questions. "
+        "Focus on creating questions directly related to the educational material provided in the context."
+    )
 
     return prompt
+
 
