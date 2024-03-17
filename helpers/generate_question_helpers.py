@@ -19,14 +19,14 @@ CHAIN_CACHE = {}
 
 
 def get_generated_questions(user_id: str, question_generation_settings, db: Session):
-    quiz, amount, round_specific_instructions, keywords = _parse_generation_settings(question_generation_settings,
+    quiz, amount, round_specific_instructions = _parse_generation_settings(question_generation_settings,
                                                                                      user_id=user_id,
                                                                                      db=db)
     _validate_inputs_and_authorization(quiz=quiz, amount=amount)
 
     existing_questions = db.query(Question).filter(Question.quiz_id == quiz.quiz_id).all()
 
-    prompt = _get_prompt(amount=amount, existing_questions=existing_questions, round_specific_instructions=round_specific_instructions)
+    prompt = _get_prompt(amount=amount, quiz=quiz, existing_questions=existing_questions, round_specific_instructions=round_specific_instructions)
     chain = _get_chain(quiz=quiz)
 
     raw_response = chain.invoke(prompt)
@@ -93,12 +93,11 @@ def _parse_generation_settings(question_generation_settings, user_id: str, db: S
         quiz_id = question_generation_settings.get('quiz_id')
         amount = question_generation_settings.get('amount')
         round_specific_instructions = question_generation_settings.get('instructions')
-        keywords = question_generation_settings.get('keywords')
 
         quiz = db.query(Quiz).filter(Quiz.user_id == user_id, Quiz.quiz_id == quiz_id).first()
 
         cloudwatch_logger.info(f' Succesfully parsed question generation settings')
-        return quiz, amount, round_specific_instructions, keywords
+        return quiz, amount, round_specific_instructions
     except Exception as e:
         cloudwatch_logger.error(f'Error while parsing question generating settings.'
                                 f'Details: {str(e)}')
