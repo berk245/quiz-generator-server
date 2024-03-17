@@ -20,22 +20,23 @@ CHAIN_CACHE = {}
 
 def get_generated_questions(user_id: str, question_generation_settings, db: Session):
     quiz, amount, round_specific_instructions, keywords = _parse_generation_settings(question_generation_settings,
-                                                                                        user_id=user_id,
-                                                                                        db=db)
+                                                                                     user_id=user_id,
+                                                                                     db=db)
     _validate_inputs_and_authorization(quiz=quiz, amount=amount)
 
     existing_questions = db.query(Question).filter(Question.quiz_id == quiz.quiz_id).all()
 
-    chain = _get_chain(quiz=quiz)
     prompt = _get_prompt(amount=amount, keywords=keywords, quiz=quiz, existing_questions=existing_questions,
-                            round_specific_instructions=round_specific_instructions)
+                         round_specific_instructions=round_specific_instructions)
+    chain = _get_chain(quiz=quiz)
+
     raw_response = chain.invoke(prompt)
+
     questions = _parse_questions(response=raw_response)
 
     for q in questions:
-        # Generate a random id for each generated question
-        # LLM is instructed to do this as well. This is for extra security and decoupling from the LLM, which
-        # may fail to provide a unique id at times.
+        ''' Generate a random id for each generated question. LLM is instructed to do this as well.
+        This is for extra security and decoupling from the LLM, which may fail to provide a unique id at times.'''
         q['question_id'] = str(uuid.uuid4())
     return questions
  
@@ -45,10 +46,12 @@ def _get_chain(quiz: Quiz | None):
     if quiz.quiz_id in CHAIN_CACHE:
         # Get chain from cache
         chain = CHAIN_CACHE[quiz.quiz_id]
+        cloudwatch_logger.info(f'Got chain from the cache: {chain}')
     else:
         # Initialize chain and cache
         chain = _initialize_conversation_chain(quiz=quiz)
         CHAIN_CACHE[quiz.quiz_id] = chain
+        cloudwatch_logger.info(f'Initialized the chain and stored in the cache: {chain}')
     return chain
 
 
@@ -56,13 +59,8 @@ def _initialize_conversation_chain(quiz: Quiz):
     cloudwatch_logger.info(f'Attempting to get conversation chain for the quiz ID: {quiz.quiz_id}')
     retriever = vectorstore_helpers.get_retriever(quiz=quiz)
 
-    template = """Answer the question based only on the following context:
-    {context}
-
-    Question: {question}
-    """
-    prompt = ChatPromptTemplate.from_template(template)
-    model = ChatOpenAI().bind_tools([GeneratedQuestions])
+    prompt = ChatPromptTemplate.from_template(_get_template(quiz=quiz))
+    model = ChatOpenAI(temperature=0.9).bind_tools([GeneratedQuestions])
 
     chain = (
         {"context": retriever, 'question': RunnablePassthrough()}
@@ -73,6 +71,46 @@ def _initialize_conversation_chain(quiz: Quiz):
 
     cloudwatch_logger.info(f'Chain successfully created')
     return chain
+
+
+
+def _get_template(quiz: Quiz):
+    template = (f'You are a helpful assistant for educators who want to automate the process of quiz creation from'
+                f'their teaching material. You will get the relevant parts of the teaching material as the user wants '
+                f'to generate questions. A user may generate questions multiple rounds. The title of this quiz is '
+                f'{quiz.quiz_title}, which may or may not be relevant to the quiz topic. It is possible that the user'
+                f' names it as "First Quiz", which has nothing to do with the context or the content of the quiz. Try '
+                f'to be aware of these cases and use the quiz title information only when it makes sense.')
+    
+    if quiz.quiz_description:
+        template += f'This is the description for the provided quiz: {quiz.quiz_description}'
+    
+    if quiz.keywords:
+        template += (f'Here are the keywords from that the user provided. These should be the main focus on the '
+                     f'questions that will be created: {quiz.keywords}. Pay special attention to these words and '
+                     f'concepts.')
+    
+    if quiz.meta_prompt:
+        template += (f"Lastly, these are the quiz instructions provided by the user, that should be taken into account "
+                     f"for all generated questions: {quiz.meta_prompt}\n")
+    
+    template += ("Exclude irrelevant details such as research questions, methods, etc., and focus on generating "
+                 "questions relevant to the educational context.")
+
+    template += ("If relevant questions cannot be generated from the context, indicate so rather than providing "
+                 "irrelevant outputs.")
+
+    template += ("Do NOT include identifiers in multiple choices or numbering (e.g., (A), (B), (C), etc.). "
+                 "Just include potential answers without any additional formatting.")
+
+    template += """
+    Create questions based on the following context
+    {context}
+
+    Question: {question}
+    """
+    
+    return template
 
 
 def _parse_generation_settings(question_generation_settings, user_id: str, db: Session):
@@ -107,30 +145,22 @@ def _parse_questions(response):
 
 def _get_prompt(amount, quiz: Quiz, existing_questions: list[Question], keywords=None,
                 round_specific_instructions=None):
-    global_quiz_instructions = quiz.meta_prompt
 
-    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers, using the documents retrieved from the Pinecone vector store. Ensure that the questions are relevant to the educational context and focus on key concepts.")
-    if global_quiz_instructions:
-        prompt += f"Include the following global instructions for all question sets: {global_quiz_instructions}\n"
+    prompt = (f"Generate a list of {amount} quiz questions along with their correct answers. Ensure that the questions are relevant to the educational "
+              f"context and focus on key concepts.")
+
 
     if round_specific_instructions:
-        prompt += (f"Additionally, for this round of question generation, follow these specific instructions: {round_specific_instructions}.")
+        prompt += (f"Additionally, for this round of question generation, follow these "
+                   f"specific instructions: {round_specific_instructions}.")
         prompt += "Ensure that each generated question adheres to all the instructions provided."
-
-    if keywords:
-        prompt += f"Pay special attention to the following keywords and concepts: {', '.join(keywords)}."
 
     if existing_questions:
         prompt += "The following questions are already in the quiz. Avoid duplicating them:"
         for question in existing_questions:
             prompt += f"Question: {question.question_text}, Correct Answer: {question.correct_answer}."
 
-    prompt += "Exclude irrelevant details such as research questions, methods, etc., and focus on generating questions relevant to the educational context."
-
-    prompt += "If relevant questions cannot be generated from the context, indicate so rather than providing irrelevant outputs."
-
-    prompt += "Do NOT include identifiers in multiple choices or numbering (e.g., (A), (B), (C), etc.). Just include potential answers without any additional formatting."
-
+   
     prompt += "Avoid generating random trivia questions."
 
 
