@@ -30,6 +30,7 @@ def get_quizzes(request: Request, db: Session):
                                 f'Details: {str(e)}')
         raise e
 
+
 async def add_quiz(request: Request, source_file: UploadFile, db: Session):
     try:
 
@@ -49,7 +50,7 @@ async def add_quiz(request: Request, source_file: UploadFile, db: Session):
                                                      db=db)
         source_handler.add_quiz_source_table(new_source=new_source, quiz_id=new_quiz.quiz_id, db=db)
         
-        add_quiz_to_vectorstore(source_file=source_file, new_quiz=new_quiz, file_hash=file_hash)
+        await add_quiz_to_vectorstore(source_file=source_file, new_quiz=new_quiz, file_hash=file_hash)
         cloudwatch_logger.info(f"Quiz created successfully. Quiz ID: {new_quiz.quiz_id}")
         return JSONResponse(status_code=200, content={"quiz_id": new_quiz.quiz_id})
 
