@@ -10,7 +10,7 @@ from loaders import pdf_loader
 from constants import MAX_RETRY_ATTEMPTS, RETRY_DELAY_SECONDS
 
 
-def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: str):
+async def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: str):
     cloudwatch_logger.info('Trying to create the vector store.')
     for attempt in range(MAX_RETRY_ATTEMPTS):
         try:
@@ -25,6 +25,7 @@ def add_quiz_to_vectorstore(source_file: UploadFile, new_quiz: Quiz, file_hash: 
                 index_name=index_name, 
                 namespace=namespace)
             cloudwatch_logger.info('Vector store created successfully.')
+            time.sleep(10) # Wait 10 seconds to allow successful Pinecone initialization
             return vectorstore
 
         except Exception as e:
