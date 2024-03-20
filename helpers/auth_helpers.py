@@ -47,13 +47,9 @@ def is_valid_email(email):
 
 
 def is_signup_data_valid(request: SignupRequest):
-    if len(request.password) < 8:
+    if len(request.password) < 6:
         return False 
     if not is_valid_email(request.email):
         return False
     return True
-    
 
-
-
-# Example usage:
