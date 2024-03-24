@@ -8,26 +8,15 @@ from handlers import auth_handler, quiz_handler, source_handler, question_handle
 from fastapi import UploadFile, File
 from config.cloudwatch_logger import cloudwatch_logger
 
+from routers import auth_router
+
 app = FastAPI()
 setup_cors_middleware(app)
 app.middleware('http')(validate_token)
 app.middleware('http')(log_request)
 
 
-@app.get("/")
-async def root():
-    cloudwatch_logger.info('This is an info log. Letsgo')
-    return {"message": "Hello World"}
-
-
-@app.post("/login")
-async def login(body: LoginRequest, db: Session = Depends(get_db)) -> JSONResponse:
-    return await auth_handler.login(request=body, db=db)
-
-
-@app.post("/signup")
-async def signup(body: SignupRequest, db: Session = Depends(get_db)) -> JSONResponse:
-    return await auth_handler.signup(request=body, db=db)
+app.include_router(auth_router.router, prefix="/auth")
 
 
 @app.get('/quizzes')
