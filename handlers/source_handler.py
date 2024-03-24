@@ -65,6 +65,7 @@ def delete_quiz_source(quiz_source: QuizSource, db: Session):
         db.commit()
     return
 
+
 def get_quiz_sources(quiz_id: str, db: Session):
     quiz_sources = (
         db.query(Source)
