@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, Request
-from models.auth import LoginRequest, SignupRequest
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from config.middleware import setup_cors_middleware, validate_token, log_request
@@ -8,7 +7,7 @@ from handlers import auth_handler, quiz_handler, source_handler, question_handle
 from fastapi import UploadFile, File
 from config.cloudwatch_logger import cloudwatch_logger
 
-from routers import auth_router
+from routers import auth_router, quiz_router
 
 app = FastAPI()
 setup_cors_middleware(app)
@@ -17,18 +16,8 @@ app.middleware('http')(log_request)
 
 
 app.include_router(auth_router.router, prefix="/auth")
+app.include_router(quiz_router.router, prefix="/quiz")
 
-
-@app.get('/quizzes')
-async def get_quizzes(request: Request, db: Session = Depends(get_db)):
-    return quiz_handler.get_quizzes(request=request, db=db)
-
-
-@app.post('/quizzes')
-async def post_quiz(request: Request,
-                    source_file: UploadFile = File(...),
-                    db: Session = Depends(get_db)):
-    return await quiz_handler.add_quiz(request=request, source_file=source_file, db=db)
 
 
 @app.get('/sources')
@@ -36,14 +25,6 @@ async def get_sources(request: Request, db: Session = Depends(get_db)):
     return source_handler.get_sources(request=request, db=db)
 
 
-@app.get('/quiz')
-async def get_quiz(request: Request, quiz_id: str, db: Session = Depends(get_db)):
-    return quiz_handler.get_quiz_info(request=request, quiz_id=quiz_id, db=db)
-
-
-@app.delete('/quiz')
-async def delete_quiz(request: Request, quiz_id: str, db: Session = Depends(get_db)):
-    return quiz_handler.delete_quiz(request=request, quiz_id=quiz_id, db=db)
 
 
 @app.get('/questions')
