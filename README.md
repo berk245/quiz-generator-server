@@ -2,7 +2,11 @@
 
 ## Project Description
 
-Qgen Server is the backend component of the Qgen application, developed to streamline the process of question generation for educators using artificial intelligence. The server provides RESTful APIs for handling user authentication, quiz management, question generation, and more.
+Qgen Server is the backend component of the Qgen application, developed to streamline the process of question generation for educators using artificial intelligence. The server provides RESTful APIs for handling user authentication, quiz management, question generation, and more. The server code is deployed to an EC2 instance and runs constantly with the help of systemctl methods. 
+
+MySQL database for production lives in the same instance. 
+
+Nginx is installed in the instance and redirects the http requests to the FastAPI application.
 
 The server is live on https://api.qgen.live
 
@@ -14,7 +18,8 @@ https://qgen-llm.web.app
 
 The Qgen Server is built with FastAPI, a modern web framework for building APIs with Python. It utilizes various middleware for tasks such as JWT validation and request logging. The server interacts with a MySQL database to store user data, quizzes, and generated questions. Additionally, Qgen Server integrates with external services such as OpenAI for embeddings and Pinecone for storing vectors.
 
-![Qgen Server Architecture Diagram](link_to_diagram)
+![Berk's landscape - FastAPI Backend Component Diagram (Latest) (1)](https://github.com/berk245/quiz-generator-server/assets/32645610/ec90ff15-b860-4a4a-b014-1bcd9ba49788)
+
 
 ## Run Locally
 
