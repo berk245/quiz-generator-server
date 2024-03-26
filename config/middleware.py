@@ -28,7 +28,8 @@ def setup_cors_middleware(app) -> None:
 
 async def validate_token(request, call_next) -> JSONResponse:
     try:
-        if request.url.path not in ['/auth/signup', '/auth/login', '/auth/cypress-user', '/docs'] and request.method != 'OPTIONS':
+        print(request.url.path)
+        if request.url.path not in ['/auth/signup', '/auth/login', '/auth/cypress-user', '/docs', '/openapi.json'] and request.method != 'OPTIONS':
             user_token = request.headers.get('authorization')
             user_id = validate_jwt(user_token)
 
