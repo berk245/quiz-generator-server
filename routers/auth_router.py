@@ -17,6 +17,6 @@ async def signup(body: SignupRequest, db: Session = Depends(get_db)) -> JSONResp
     return await auth_handler.signup(request=body, db=db)
 
 
-@router.delete('/cypress-user')
+@router.delete('/cypress-user',  tags=['test'], description='Deletes the created cypress test user after testing.')
 async def delete_user(request: Request, db: Session = Depends(get_db)):
     return await auth_handler.delete_cypress_user(request=request, db=db)

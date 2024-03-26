@@ -5,6 +5,6 @@ from config.db import get_db
 
 router = APIRouter()
 
-@router.get('/')
+@router.get('/', tags=['sources'])
 async def get_sources(request: Request, db: Session = Depends(get_db)):
     return source_handler.get_sources(request=request, db=db)
