@@ -124,6 +124,9 @@ def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_spe
         "Ensure that the questions are relevant to the educational context and focus on key concepts."
     )
     
+    if quiz.learning_objectives:
+        prompt += f"\n\nLearning Objectives to Focus On: {quiz.learning_objectives}\n"
+    
     if quiz.keywords:
         prompt += f"\n\nKeywords: {', '.join(quiz.keywords)}. Pay special attention to these concepts."
     
