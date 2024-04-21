@@ -9,6 +9,7 @@ def serialize_quiz(quiz):
         "quiz_description": quiz.quiz_description,
         "keywords": quiz.keywords,
         "meta_prompt": quiz.meta_prompt,
+        "learning_objectives": quiz.learning_objectives,
         "created_at": quiz.created_at.isoformat() if quiz.created_at else None,
         "is_active": quiz.is_active,
     }
