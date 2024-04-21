@@ -25,10 +25,12 @@ class Quiz(Base):
     user_id = Column(INT, ForeignKey('User.user_id'), nullable=False)
     quiz_title = Column(String, nullable=False)
     quiz_description = Column(LONGTEXT, nullable=True)
+    learning_objectives = Column(LONGTEXT, nullable=True)
     keywords = Column(LONGTEXT, nullable=True)
-    meta_prompt = Column(LONGTEXT, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_active = Column(Boolean, nullable=False, default=1)
+    meta_prompt = Column(LONGTEXT, nullable=True) # replaced with learning instructions. only old quizzes will have this field
+    
 
     # Define the many-to-one relationship
     user = relationship("User", back_populates="quizzes")
