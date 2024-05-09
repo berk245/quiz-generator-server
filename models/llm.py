@@ -13,7 +13,7 @@ class GeneratedQuestion(BaseModel):
                                         'medium, hard')
     score: str = Field(description='The score of the question, defining the question quality. A value from 0 to 5, 5 '
                                    'being the best quality.')
-    question_type: str = Field(description='Always set it as "multi"')
+    question_type: str = Field(default='multi', description='Question type. Always multi for multiple choice questions.')
     
 
 class GeneratedQuestions(BaseModel):
