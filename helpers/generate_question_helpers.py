@@ -37,6 +37,7 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
         ''' Generate a random id for each generated question. LLM is instructed to do this as well.
         This is for extra security and decoupling from the LLM, which may fail to provide a unique id at times.'''
         q['question_id'] = str(uuid.uuid4())
+        q['question_type'] = 'multi' # TODO: handle different types when implemented
     return questions
  
 
@@ -59,6 +60,8 @@ def _initialize_conversation_chain(quiz: Quiz):
     retriever = vectorstore_helpers.get_retriever(quiz=quiz)
 
     prompt = ChatPromptTemplate.from_template(_get_template(quiz=quiz))
+    # model = ChatOpenAI(model_name='gpt-4', temperature=0.9).bind_tools([GeneratedQuestions]) 
+    # TODO: Uncomment the above line to set model to GPT-4 before tests
     model = ChatOpenAI(temperature=0.9).bind_tools([GeneratedQuestions])
 
     chain = (
@@ -69,6 +72,7 @@ def _initialize_conversation_chain(quiz: Quiz):
     )
 
     cloudwatch_logger.info(f'Chain successfully created')
+    
     return chain
 
 
@@ -123,6 +127,9 @@ def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_spe
         f"Generate a list of {amount} quiz questions along with their correct answers. "
         "Ensure that the questions are relevant to the educational context and focus on key concepts."
     )
+    
+    if quiz.learning_objectives:
+        prompt += f"\n\nLearning Objectives to Focus On: {quiz.learning_objectives}\n"
     
     if quiz.keywords:
         prompt += f"\n\nKeywords: {', '.join(quiz.keywords)}. Pay special attention to these concepts."

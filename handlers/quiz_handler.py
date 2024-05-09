@@ -102,6 +102,7 @@ def _add_quiz_table(quiz_info: FormData, user_id, db: Session):
     new_quiz = Quiz(
         quiz_title=quiz_info.get('quiz_title'),
         quiz_description=quiz_info.get('quiz_description'),
+        learning_objectives = quiz_info.get('learning_objectives'),
         keywords=quiz_info.get('keywords'),
         meta_prompt=quiz_info.get('meta_prompt'),
         user_id=user_id
