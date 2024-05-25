@@ -60,9 +60,9 @@ def _initialize_conversation_chain(quiz: Quiz):
     retriever = vectorstore_helpers.get_retriever(quiz=quiz)
 
     prompt = ChatPromptTemplate.from_template(_get_template(quiz=quiz))
-    # model = ChatOpenAI(model_name='gpt-4', temperature=0.9).bind_tools([GeneratedQuestions]) 
+    model = ChatOpenAI(model_name='gpt-4', temperature=0.9).bind_tools([GeneratedQuestions]) 
     # TODO: Uncomment the above line to set model to GPT-4 before tests
-    model = ChatOpenAI(temperature=0.9).bind_tools([GeneratedQuestions])
+    # model = ChatOpenAI(temperature=0.9).bind_tools([GeneratedQuestions])
 
     chain = (
         {"context": retriever, 'question': RunnablePassthrough()}
