@@ -5,14 +5,12 @@ class GeneratedQuestion(BaseModel):
     question_id: str = Field(description='A unique identifier for each generated question.')
     question_text: str = Field(description="The question to be added to the quiz. If you can't generate a question from"
                                            "the context, just leave it blank. Do not make up trivia questions.")
-    multiple_choices: str = Field(description="A string that includes four, comma separated potential answers to the "
-                                              "question. Do not include any identifiers or anything else, such as A,B,C"
-                                              " or 1,2,3")
+    multiple_choices: str = Field(description="A string that includes four potential answers to the "
+                                              "question. Identifiers should be A) B) C) and D)")
     correct_answer: str = Field(description='Correct answer to the question. Must be one of the four multiple choices.')
     difficulty: str = Field(description='The proposed difficulty of the question. Only possible options are easy, '
                                         'medium, hard')
-    score: str = Field(description='The score of the question, defining the question quality. A value from 0 to 5, 5 '
-                                   'being the best quality.')
+    score: str = Field(description='A value from 0 to 5 representing the question quality. 5 being the best quality.')
     question_type: str = Field(default='multi', description='Question type. Always multi for multiple choice questions.')
     
 

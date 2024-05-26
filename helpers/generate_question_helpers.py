@@ -38,6 +38,8 @@ def get_generated_questions(user_id: str, question_generation_settings, db: Sess
         This is for extra security and decoupling from the LLM, which may fail to provide a unique id at times.'''
         q['question_id'] = str(uuid.uuid4())
         q['question_type'] = 'multi' # TODO: handle different types when implemented
+        if int(q['score']) > 5 or  int(q['score']) < 1:
+             q['score'] = '3'
     return questions
  
 
@@ -154,8 +156,7 @@ def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_spe
     )
     
     prompt += (
-        "\nDo NOT include identifiers in multiple choices or numbering such as A, B, C or 1, 2, 3. "
-        "Just include potential answers separated by commas, without any additional formatting."
+        "\nIdentifiers in multiple choices shoud be A), B), C), D). Separate choices with a comma and a space. "
     )
     
     prompt += (
@@ -163,6 +164,9 @@ def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_spe
         "Focus on creating questions directly related to the educational material provided in the context."
         "In case there is no context to generate questions from, just output 'No relevant context' as question, and 'N/A' as answers."
         "Never generate random, irrelevant questions."
+    )
+    prompt += (
+        "\n\nEnsure that none of the multiple choice questions include 'Both' or 'Neither' as potential answers. Always try to create 3 plausible distractors for each question."
     )
 
     return prompt
