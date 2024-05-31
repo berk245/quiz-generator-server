@@ -10,7 +10,7 @@ class GeneratedQuestion(BaseModel):
     correct_answer: str = Field(description='Correct answer to the question. Must be one of the four multiple choices.')
     difficulty: str = Field(description='The proposed difficulty of the question. Only possible options are easy, '
                                         'medium, hard')
-    score: str = Field(description='A value from 0 to 5 representing the question quality. 5 being the best quality.')
+    score: str = Field(description='A value from 0 to 5 representing the question quality. Based on the clarity, distractor quality, and alignment with learning objectives. Only generate questions that have a score of 3.')
     question_type: str = Field(default='multi', description='Question type. Always multi for multiple choice questions.')
     
 

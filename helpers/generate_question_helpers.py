@@ -126,23 +126,20 @@ def _parse_questions(response):
 def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_specific_instructions=None):
 
     prompt = (
-        f"Generate a list of {amount} quiz questions along with their correct answers. "
-        "Ensure that the questions are relevant to the educational context and focus on key concepts."
+        f"Generate {amount} multiple choice questions along with their correct answers. "
     )
-    
     if quiz.learning_objectives:
-        prompt += f"\n\nLearning Objectives to Focus On: {quiz.learning_objectives}\n"
+        prompt += f"\n\n Focus on these learning objectives {quiz.learning_objectives}\n. Make sure that all generated questions align well with them."
     
     if quiz.keywords:
-        prompt += f"\n\nKeywords: {', '.join(quiz.keywords)}. Pay special attention to these concepts."
+        prompt += f"\n\n Pay special attention to these keywords and concepts: {', '.join(quiz.keywords)}."
     
     if quiz.meta_prompt:
-        prompt += f"\n\nUser Instructions: {quiz.meta_prompt}\n"
+        prompt += f"\n\n{quiz.meta_prompt}\n"
 
     if round_specific_instructions:
         prompt += (
-            f"\n\nFor this round of question generation, follow these specific instructions: "
-            f"{round_specific_instructions}. Ensure that each generated question adheres to all the provided instructions."
+            f"{round_specific_instructions}. Ensure that each generated question adheres to all these instructions."
         )
 
     if existing_questions:
@@ -152,7 +149,7 @@ def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_spe
 
     prompt += (
         "\nExclude irrelevant details such as research questions, methods, authors, table of contents, chapter titles and contents, etc. "
-        "\nFocus on generating questions that will be in a quiz to test general knowledge about the provided material."
+        "\nFocus on generating questions that will be in an assessment to test the understanding of the provided material."
     )
     
     prompt += (
@@ -160,13 +157,13 @@ def _get_prompt(amount, quiz:Quiz, existing_questions: list[Question], round_spe
     )
     
     prompt += (
-        "\n\nAvoid generating random trivia questions, such as 'What is the capital city of Paris?'"
         "Focus on creating questions directly related to the educational material provided in the context."
+        "Generate ONLY high quality questions that can be used in real world assesments with clear and formal language, correct grammar, plausible distractors, and a single correct answer."
+        "Do not generate questions with obvious answers. Do not generate questions where the question imply the answer."
+        "Ensure that none of the multiple choice questions include 'Both' or 'Neither' as potential answers. Always make sure to create 3 plausible distractors for each question."
+        "Limit the use of 'All of the above', 'None of the above', 'Both B and C' type of distractors."
         "In case there is no context to generate questions from, just output 'No relevant context' as question, and 'N/A' as answers."
         "Never generate random, irrelevant questions."
-    )
-    prompt += (
-        "\n\nEnsure that none of the multiple choice questions include 'Both' or 'Neither' as potential answers. Always try to create 3 plausible distractors for each question."
     )
 
     return prompt
